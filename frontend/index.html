@@ -3,197 +3,1365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>remindME - AI Personal Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" content="#e97749">
-    <meta name="description" content="remindME - AI-powered personal assistant for managing reminders, tasks, and information">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPHN0eWxlPgouZmlyc3QtbGV0dGVyIHsgZm9udC1mYW1pbHk6IEludGVyLCBzYW5zLXNlcmlmOyBmb250LXNpemU6IDE4cHg7IGZvbnQtd2VpZ2h0OiA2MDA7IGZpbGw6IHdoaXRlOyB0ZXh0LWFuY2hvcjogbWlkZGxlOyBkb21pbmFudC1iYXNlbGluZTogY2VudHJhbDsgfQo8L3N0eWxlPgo8dGV4dCB4PSIxNiIgeT0iMTYiIGNsYXNzPSJmaXJzdC1sZXR0ZXIiPnJNPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMzIiIHkyPSIzMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlOTc3NDkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZjk3MzE2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
-</head>
-<body class="claude-bg transition-colors duration-300">
-    <!-- Header -->
-    <header class="claude-header px-4 py-3 shadow-sm">
-        <div class="flex items-center justify-between max-w-6xl mx-auto">
-            <div class="flex items-center space-x-3">
-                <div class="logo w-7 h-7 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-semibold text-xs">rM</span>
-                </div>
-                <h1 class="text-lg font-semibold claude-text">remindME</h1>
-            </div>
-            <nav class="flex items-center space-x-2" role="navigation" aria-label="Main navigation">
-                <button id="new-chat" class="claude-button px-3 py-2 rounded-lg text-sm font-medium claude-text" aria-label="Start new chat">
-                    New Chat
-                </button>
-                <button id="sidebar-toggle" class="claude-button p-2 rounded-lg" aria-label="Toggle sidebar">
-                    <svg class="w-5 h-5 claude-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                <button id="theme-toggle" class="claude-button p-2 rounded-lg" aria-label="Toggle theme">
-                    <svg class="w-5 h-5 claude-text-secondary hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    <svg class="w-5 h-5 claude-text-secondary block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
-            </nav>
-        </div>
-    </header>
+    <title>Botiverse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link class="image" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    <div class="flex max-w-6xl mx-auto relative min-h-screen">
-        <!-- Main Chat Area -->
-        <main class="flex-1 flex flex-col">
-            <!-- Chat Messages Container -->
-            <div id="chat-container" class="chat-container flex-1 overflow-y-auto px-4 py-6">
-                <div id="messages" class="space-y-6 mx-auto" style="max-width: 768px;">
-                    <!-- Welcome Message -->
-                    <div class="message-animation">
-                        <div class="flex items-start space-x-4">
-                            <div class="message-avatar ai-avatar">
-                                <span>AI</span>
-                            </div>
-                            <div class="ai-message rounded-xl px-4 py-3 message-bubble">
-                                <div class="message-content claude-text">
-                                    <p>Hi! I'm your AI assistant. I can help you manage reminders, answer questions, and organize your information. What would you like to do today?</p>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body { 
+            background-color: #1f1e1d;
+            color: #e8e8e3;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: row-reverse; /* This moves sidebar to right */
+        }
+
+        /* Sidebar - Now on the right */
+        .sidebar {
+            min-width: 280px;
+            background-color: #1f1e1d;
+            padding: 16px;
+            transition: min-width 0.3s ease;
+            position: relative;
+            z-index: 2;
+            order: 2;
+            border-left: 1px solid #3a3a38;
+        }
+
+        .sidebar.collapsed {
+            min-width: 68px;
+            transition: min-width 0.3s ease;
+        }
+
+        .sidebar.hide {
+            min-width: 0px;
+            transition: min-width 0.3s ease;
+        }
+
+        .sidebar.hoverSidebar {
+            position: absolute;
+            width: 80px;
+            transition: min-width 0.3s ease;
+            background-color: #262624;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 5;
+            border-left: 1px solid #3a3a38;
+        }
+
+        .sidebar.hoverSidebar-hide {
+            width: 0px;
+            transition: min-width 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+            width: auto;
+            transition: width 0.2s;
+        }
+
+        .sidebar-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            color: #e8e8e3;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            display: block;
+            color: #b8b8b3;
+        }
+
+        .toggle-btn:hover {
+            color: #e8e8e3;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 10px;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            color: #b8b8b3;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 2px;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #3a3a38;
+            color: #e8e8e3;
+        }
+
+        .sidebar ul li a:active,
+        .sidebar ul li a.active {
+            background-color: #c96342;
+            color: #ffffff;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 12px;
+            font-size: 16px;
+            transition: margin-right 0.3s ease;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Time Display Styles */
+        .time-display {
+            background-color: #1f1e1d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            min-width: 100%;
+        }
+
+        .time-display:hover, .reminder-item:hover {
+            background-color: #2e2421;
+        }
+
+        .current-time {
+            font-size: 28px;
+            font-weight: 600;
+            color: #e8e8e3;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 8px;
+        }
+
+        .current-date {
+            font-size: 14px;
+            color: #b8b8b3;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        /* Reminder Section Styles */
+        .reminder-section {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        .reminder-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e8e8e3;
+            margin-bottom: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .reminder-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .reminder-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .reminder-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .reminder-list::-webkit-scrollbar-thumb {
+            background: #3a3a38;
+            border-radius: 2px;
+        }
+
+        .reminder-item {
+            background-color: #1f1e1d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .reminder-item:hover {
+            background-color: #2e2421;
+            border-color: #4a4a48;
+        }
+
+        .reminder-time {
+            font-size: 12px;
+            color: #c96342;
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .reminder-text {
+            font-size: 13px;
+            color: #e8e8e3;
+            line-height: 1.4;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .no-reminders {
+            text-align: center;
+            padding: 24px;
+            color: #8a8a88;
+        }
+
+        .no-reminders i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .no-reminders p {
+            font-size: 13px;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Action Buttons */
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #3a3a38;
+        }
+
+        .action-btn {
+            background-color: #0f0f0f;
+            border: none;
+            color: #e8e8e3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .action-btn:active {
+            background-color: #2a2a2a;
+        }
+
+        .action-btn i {
+            font-size: 12px;
+        }
+
+        .sidebar.collapsed ul li a i {
+            margin-right: 0;
+        }
+
+        .sidebar.collapsed ul li a .sidebar-text {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-content {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-actions {
+            display: none;
+        }
+
+        .sidebar.collapsed .toggle-btn {
+            display: block;
+        }
+
+        /* Main Content - Now on the left */
+        main {
+            flex-grow: 2;
+            flex-grow: none;
+            overflow: hidden;
+            padding: 0px 0px 0px 0px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            order: 1; /* Ensure main content stays on left */
+        }
+
+        .chat-container {
+            display: flex;
+            position: relative;
+            flex-direction: column;
+            background-color: #262624;
+            margin: 0;
+            border-radius: 0;
+            margin-bottom: 0px;
+            height: 100vh;
+            overflow-y: scroll;
+            overflow-x: hidden; 
+            padding-bottom: 10%;
+            border-right: 1px solid #3a3a38;
+        }
+
+        .chat-container.scrollable {
+           overflow-y: scroll;
+           width: 12px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: #3a3a38;
+            border-radius: 3px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background-color: #4a4a48;
+        }
+
+        .input-box {
+            position: relative;
+            z-index: 2;
+        }
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            background-color: transparent;
+            height: 100%;
+            overflow-y: hidden;
+            align-self: center;
+            width: 650px;
+            align-items: left;
+        }
+
+        .message {
+            display: inline-block;
+            margin-bottom: 16px;
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-left: 20px;
+            margin-right: 20px;
+            opacity: 1;
+            overflow: hidden;
+            color: #e8e8e3;
+        }
+
+        .typing-box-container {
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+            justify-content: center;
+            justify-self: center;
+            justify-items: center;
+            align-items: center;
+            margin-top: auto;
+            align-content: center;
+            align-tracks:center;
+            align-self: center;
+            width: 800px;
+            padding: 0 1rem;
+            box-sizing: border-box;
+            margin-top: calc(0vh - 56px);
+            margin-bottom: 1px;
+            position: fixed;
+            bottom: 0;
+            max-width: 100%;
+            flex-grow: 20%;
+            justify-content: space-between;
+        }
+
+        .sidebar.collapsed + main .typing-box-container {
+            width: calc(100% - 68px);
+        }
+
+        .sidebar.hide {
+            width: 0px;
+            padding: 0px;
+        }
+
+        .sidebar.hide ul li a {
+            opacity: 0;
+        }
+
+        .flex-Typing-Box {
+            display: flex;
+            padding: 5px;
+            width: 100%;
+            align-items: center;
+            align-self: center;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: flex-end;
+            justify-content: right;
+            background-color: #1f1e1d;
+            padding: 12px 16px;
+            border-radius: 12px;
+            justify-self: right;
+            width: 88%;
+            z-index: 2;
+            border: 1px solid #3a3a38;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: #c96342;
+        }
+
+        .sidebar.collapsed .input-box {
+            justify-content: flex-end;
+            width: calc(10% - 182px);
+            margin-left: auto;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 5px;
+            font-family: 'Roboto', sans-serif;
+            resize: vertical;
+            overflow-y: auto;
+            max-height: 8em;
+            z-index: 2;
+        }
+
+        .input-box button {
+            background-color: #c96342;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-box button:hover {
+            background-color: #b85a3a;
+        }
+
+        .input-box button:disabled {
+            background-color: #4a4a48;
+            color: #8a8a88;
+            cursor: not-allowed;
+        }
+
+        .input-box button i {
+            font-size: 16px;
+            z-index: 2;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background-color: #262624;
+            position: relative;
+            z-index: 2;
+            border-bottom: 1px solid #3a3a38;
+        }
+
+        .header-left {
+            color: #e8e8e3;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header-right .share-button {
+            background-color: #c96342;
+            border: none;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header-right .share-button:hover {
+            background-color: #b85a3a;
+        }
+
+        .message-Input {
+          font-size: 18px;
+          margin-bottom: 3px;
+          margin-left: 3px;
+        }
+
+        .div-picture-Button {
+            display: flex;
+            align-items: middle;
+            margin-left: 7px;
+            margin-right: 10px;
+            z-index: 2;
+        }
+
+        .picture-Button {
+            border: none;
+            color: #b8b8b3;
+            background-color: #1f1e1d;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 12px;
+            border-radius: 6px;
+            height: 48px;
+            width: 48px;
+            z-index: 2;
+            border: 1px solid #3a3a38;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .picture-Button:hover {
+            background-color: #3a3a38;
+            color: #e8e8e3;
+            border-color: #4a4a48;
+        }
+
+        .picture-Button:active {
+            background-color: #c96342;
+            color: #ffffff;
+            border-color: #c96342;
+        }
+
+        .instructions {
+            align-items: center;
+            align-self: center;
+            font-size: 12px;
+            color: #8a8a88;
+            display: block;
+            z-index: 2;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        .div-instructions {
+            display: block;
+            flex-wrap: wrap;
+            margin-top: 3px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .fade-container {
+            position: relative;
+        }
+
+        .fade-container::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(to top, #1a1a1a 40%, transparent);
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .input-box, .picture-Button {
+            position: relative;
+            z-index: 2;
+        }
+
+        .show-response {
+            display:flex;
+            flex-direction: column;
+        }
+
+        .chat-place {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow:hidden;
+            align-self:center;
+            width: 700px;
+            align-items: left;
+            overflow-y: auto;
+        }
+
+        .scrollbar {
+            display: flex;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background-color: #ccc;
+        }
+
+        .additional-content {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            display: inline-block;
+            object-position: top;
+        }
+
+        .logo {
+            width: 34px;
+            height: 34px;
+            margin-right: 20px;
+            display: inline-block;
+            object-position: top;
+            vertical-align:top;
+            border-radius: 50px;
+        }
+
+        .message-container {
+            display: flex;
+            position: relative;
+            transition: opacity 0.2s;
+            flex-direction: row;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            align-self:center;
+            width: 70%;
+            max-width: 700px;
+            opacity: 0;
+            overflow-wrap: break-word;
+        }
+
+        .dropdown-logo {
+            display: flex;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+        .input-box div[contenteditable] {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: #e8e8e3;
+            padding: 8px 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            overflow: auto;
+            min-height: 20px;
+            max-height: 120px;
+            z-index: 2;
+            word-wrap: break-word;
+        }
+
+        .input-box div[contenteditable]:empty::before {
+            content: attr(data-placeholder);
+            color: #8a8a88;
+            pointer-events: none;
+            font-style: normal;
+        }
+
+        /* Welcome message with Libre Baskerville */
+        .welcome-greeting {
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 32px;
+            font-weight: 400;
+            color: #e8e8e3;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .welcome-greeting .icon {
+            color: #c96342;
+            margin-right: 16px;
+            font-size: 24px;
+        }
+
+        .sidebar.collapsed h3 {
+            display: none;
+            opacity: 0.5;
+            transition: opacity 0.18s ease;
+        }
+
+        .mobile-container {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            flex-direction: column;
+        }
+
+        .mobileDiv ul {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            justify-content: space-around;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            height: 4pc;
+        }
+
+        .mobileDiv ul li {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            justify-self:top;
+            justify-content: end; 
+        }
+
+        .mobileDiv {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #262624;
+            padding: 12px;
+            z-index: 10;
+            border-top: 1px solid #3a3a38;
+        }
+
+        .mobileDiv ul li a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #b8b8b3;
+            text-decoration: none;
+            align-items: top;
+            align-self: center;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .mobileDiv ul li a i {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .mobileDiv ul li a .sidebar-text {
+            font-size: 11px;
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mobileDiv ul li a:hover,
+        .mobileDiv ul li a.active {
+            background-color: #c96342;
+            color: #ffffff;
+            transform: none;
+        }
+
+        .div-typing-box-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: none;
+            color: #b8b8b3;
+            font-style: normal;
+            margin-left: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            padding: 12px 0;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            background-color: #2a1a1a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 12px 20px;
+            border-left: 3px solid #ff6b6b;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="fade-container">
+  <div class="container">
+      <nav class="sidebar" id="sidebar">
+          <!-- Toggle button positioned at top right -->
+          <i class="fas fa-bars toggle-btn" onclick="toggleSidebar()"></i>
+          
+          <div class="sidebar-content">
+              <div class="sidebar-column">
+                  <div class="sidebar-header">
+                      <h3 id="sidebar-header-text">Dashboard</h3>
+                  </div>
+              </div>
+              
+              <div class="sidebar-column">
+                  <!-- Time Display Section -->
+                  <div class="time-display">
+                      <div class="current-time" id="currentTime">12:45 PM</div>
+                      <div class="current-date" id="currentDate">Monday, Dec 23, 2024</div>
+                  </div>
+              </div>
+              
+              <div class="sidebar-column">
+                  <!-- Reminder Section -->
+                  <div class="reminder-section">
+                      <h4 class="reminder-title">Today's Reminders</h4>
+                      <div class="reminder-list" id="reminderList">
+                          <div class="reminder-item">
+                              <div class="reminder-time">2:30 PM</div>
+                              <div class="reminder-text">Team meeting with developers</div>
+                          </div>
+                          <div class="reminder-item">
+                              <div class="reminder-time">5:00 PM</div>
+                              <div class="reminder-text">Review project documentation</div>
+                          </div>
+                          <div class="no-reminders" style="display: none;">
+                              <i class="fas fa-calendar-check"></i>
+                              <p>No reminders for today</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Action Buttons at bottom -->
+          <div class="sidebar-actions">
+              <button class="action-btn" onclick="setReminder()">
+                  <i class="fas fa-plus"></i>
+                  Set Reminder
+              </button>
+              <button class="action-btn" onclick="viewHistory()">
+                  <i class="fas fa-history"></i>
+                  View History
+              </button>
+          </div>
+      </nav>
+    <div class="fade-container"></div>
+
+    <main>
+        <div id="content">
+            <!-- Content will be dynamically loaded here -->
+        </div>
+        
+      <div class="mobileDiv" id="mobileDiv">
+        <ul>
+          <li><a href="#chatBot"><i class="fas fa-home"></i><span class="sidebar-text">Chat Bots</span></a></li>
+              <li><a href="#explore"><i class="fas fa-compass"></i><span class="sidebar-text">Explore</span></a></li>
+              <li><a href="#imageGenerator"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Image Generator</span></a></li>
+              <li><a href="#library"><i class="fas fa-cog"></i><span class="sidebar-text">Library</span></a></li>
+        </ul>
+      </div>
+     </main> 
+  </div>
+ </div>
+
+<script>
+    // Session management
+    let sessionId = 'session-' + Date.now();
+    let isLoading = false;
+
+    // Time and Date functionality
+    function updateTimeDisplay() {
+        const now = new Date();
+        
+        // Format time (12-hour format with AM/PM)
+        const timeOptions = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        const timeString = now.toLocaleTimeString('en-US', timeOptions);
+        
+        // Format date
+        const dateOptions = {
+            weekday: 'long',
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+        };
+        const dateString = now.toLocaleDateString('en-US', dateOptions);
+        
+        // Update DOM elements
+        const timeElement = document.getElementById('currentTime');
+        const dateElement = document.getElementById('currentDate');
+        
+        if (timeElement) timeElement.textContent = timeString;
+        if (dateElement) dateElement.textContent = dateString;
+    }
+
+    // Update time every second
+    setInterval(updateTimeDisplay, 1000);
+    updateTimeDisplay(); // Initial call
+
+    // Reminder functionality
+    function setReminder() {
+        // Simple prompt for now - you can enhance this with a modal later
+        const reminderText = prompt("Enter your reminder:");
+        const reminderTime = prompt("Enter time (e.g., 3:30 PM):");
+        
+        if (reminderText && reminderTime) {
+            addReminderToList(reminderTime, reminderText);
+        }
+    }
+
+    function addReminderToList(time, text) {
+        const reminderList = document.getElementById('reminderList');
+        const noReminders = reminderList.querySelector('.no-reminders');
+        
+        // Hide "no reminders" message if visible
+        if (noReminders && noReminders.style.display !== 'none') {
+            noReminders.style.display = 'none';
+        }
+        
+        // Create new reminder item
+        const reminderItem = document.createElement('div');
+        reminderItem.className = 'reminder-item';
+        reminderItem.innerHTML = `
+            <div class="reminder-time">${time}</div>
+            <div class="reminder-text">${text}</div>
+        `;
+        
+        // Add before the no-reminders div
+        if (noReminders) {
+            reminderList.insertBefore(reminderItem, noReminders);
+        } else {
+            reminderList.appendChild(reminderItem);
+        }
+    }
+
+    function viewHistory() {
+        alert("Reminder history functionality coming soon!");
+        // You can implement a modal or navigate to a history page here
+    }
+
+    function sendMessage() {
+        var messageInput = document.getElementById('messageInput');
+        var messageText = messageInput.textContent.trim();
+        
+        if (messageText !== '' && !isLoading) {
+            isLoading = true;
+            var chatContainer = document.querySelector('.chat-container');
+
+            // Log the message text to the console
+            console.log(messageText);
+
+            // Create user message
+            var message = `<strong>You:</strong><br>${messageText.replace(/\n/g, "<br>")}`;
+
+            // Create a container div for the message
+            var messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container');
+
+            // Create a div for the additional content (user avatar)
+            var additionalContent = document.createElement('div');
+            additionalContent.classList.add('additional-content');
+
+            // Create the logo image (use a default user icon if image not found)
+            var logoImg = document.createElement('img');
+            logoImg.src = 'Screenshot_2022-01-18-16-24-07-73.jpg';
+            logoImg.classList.add('logo');
+            logoImg.onerror = function() {
+                // If image fails to load, create a text avatar
+                var avatar = document.createElement('div');
+                avatar.style.cssText = `
+                    width: 34px; height: 34px; border-radius: 6px; 
+                    background: #3a3a38; color: #e8e8e3; 
+                    display: flex; align-items: center; justify-content: center;
+                    font-weight: 600; margin-right: 20px; font-size: 14px;
+                    font-family: 'Inter', sans-serif;
+                `;
+                avatar.textContent = 'K';
+                additionalContent.replaceChild(avatar, logoImg);
+            };
+
+            additionalContent.appendChild(logoImg);
+            
+            // Create the message div
+            var newMessageDiv = document.createElement('div');
+            newMessageDiv.classList.add('message');
+            newMessageDiv.innerHTML = message;
+
+            // Append elements
+            messageContainer.appendChild(additionalContent);
+            messageContainer.appendChild(newMessageDiv);
+            chatContainer.appendChild(messageContainer);
+
+            // Show message
+            setTimeout(function() {
+                messageContainer.style.opacity = 1;
+            }, 100);
+
+            // Clear input
+            messageInput.textContent = '';
+
+            // Show loading indicator
+            var loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('loading');
+            loadingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 8px; color: #c96342;"></i>Claude is thinking...';
+            chatContainer.appendChild(loadingDiv);
+            loadingDiv.style.display = 'block';
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Send to API
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: messageText,
+                    session_id: sessionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading indicator
+                loadingDiv.remove();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Create bot response
+                var botMessage = `<strong>Bot:</strong><br>${data.response.replace(/\n/g, "<br>")}`;
+                
+                var botMessageContainer = document.createElement('div');
+                botMessageContainer.classList.add('message-container');
+
+                var botAdditionalContent = document.createElement('div');
+                botAdditionalContent.classList.add('additional-content');
+
+                // Bot avatar
+                var botAvatar = document.createElement('div');
+                botAvatar.style.cssText = `
+                    width: 34px; height: 34px; border-radius: 6px; 
+                    background: #c96342; color: #ffffff;
+                    display: flex; align-items: center; justify-content: center;
+                    font-weight: bold; margin-right: 20px; font-size: 16px;
+                `;
+                botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+                botAdditionalContent.appendChild(botAvatar);
+
+                var botMessageDiv = document.createElement('div');
+                botMessageDiv.classList.add('message');
+                botMessageDiv.innerHTML = botMessage;
+
+                botMessageContainer.appendChild(botAdditionalContent);
+                botMessageContainer.appendChild(botMessageDiv);
+                chatContainer.appendChild(botMessageContainer);
+
+                // Show bot message
+                setTimeout(function() {
+                    botMessageContainer.style.opacity = 1;
+                }, 100);
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            })
+            .catch(error => {
+                // Remove loading indicator
+                loadingDiv.remove();
+                
+                // Show error message
+                var errorDiv = document.createElement('div');
+                errorDiv.classList.add('error-message');
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+                chatContainer.appendChild(errorDiv);
+                
+                console.error('Error:', error);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            })
+            .finally(() => {
+                isLoading = false;
+            });
+        }
+    }
+
+    function checkZoomLevel() {
+        var zoomLevel = Math.round(window.devicePixelRatio * 100);
+        var sidebar = document.getElementById('sidebar');
+        var header = document.getElementById('header');
+        var sidebarHeader = document.getElementById('sidebar-header');
+        var screenWidth = window.innerWidth;
+        var mobileDiv = document.getElementById('mobileDiv');
+        var body = document.body;
+
+        if (zoomLevel > 400 || screenWidth <= 700) {
+            sidebar.classList.add('hide');
+            sidebar.classList.remove('collapsed');
+            mobileDiv.style.display = 'block';
+            moveSidebarItemsToSidebar();
+        } else if (zoomLevel > 300 || screenWidth <= 900) {
+            sidebar.classList.add('collapsed');
+            mobileDiv.style.display = 'none';
+            moveSidebarItemsToSidebar();
+        } else {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.remove('hide');
+            sidebar.style.display = 'block';
+            mobileDiv.style.display = 'none';
+            moveSidebarItemsToSidebar();  
+        }
+    }
+
+    function moveSidebarItemsToSidebar() {
+        // Since we removed ul/li structure, we'll handle mobile differently
+        // For now, we'll keep the mobile div as is and handle sidebar collapse
+        var mobileDiv = document.getElementById('mobileDiv');
+        var sidebar = document.getElementById('sidebar');
+        
+        if (window.innerWidth <= 700) {
+            // Hide sidebar content on mobile, show mobile nav
+            sidebar.style.display = 'none';
+            mobileDiv.style.display = 'block';
+        } else {
+            // Show sidebar on desktop, hide mobile nav
+            sidebar.style.display = 'flex';
+            mobileDiv.style.display = 'none';
+        }
+    }
+
+    window.addEventListener('resize', checkZoomLevel);
+    window.addEventListener('load', checkZoomLevel);
+
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var toggleBtn = document.querySelector('.toggle-btn');
+        sidebar.classList.toggle('collapsed');
+    }
+
+    var toggleBtn = document.querySelector('.toggle-btn');
+
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === '/') { 
+            event.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            messageInput.focus();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var discoverButton = document.querySelector('.sidebar ul li:nth-child(2) a');
+        if (discoverButton) {
+            discoverButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = 'AINews.html';
+            });
+        }
+    }); 
+
+    window.addEventListener('hashchange', () => {
+        const content = document.getElementById('content');
+        const hash = window.location.hash.slice(1);
+        
+        switch(hash) {
+            case 'chatBot':
+                content.innerHTML = `
+                    <div class="header">
+                        <div class="header-left">Claude</div>
+                        <div class="header-right">
+                            <button class="share-button" onclick="startNewChat()">
+                                <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat-container" id="chatContainer">
+                        <div class="message-container" id="messageContainer"></div>
+                    </div>
+                    <div class="div-typing-box-container">
+                        <div class="typing-box-container">
+                            <div class="flex-Typing-Box">
+                                <div class="input-box">
+                                    <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
+                                    <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+                                </div>
+                                <div class="div-picture-Button">
+                                    <button class="picture-Button">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
                                 </div>
                             </div>
+                            <div class="div-instructions">
+                                <p><span class="instructions">Claude can make mistakes. Check important info.</span></p>
+                            </div>
+                        </div>
+                    </div>`;
+                break;
+            case 'explore':
+                content.innerHTML = `
+                    <div class="header">
+                        <div class="header-left">Projects</div>
+                        <div class="header-right">
+                            <button class="share-button"><i class="fas fa-briefcase"></i></button>
                         </div>
                     </div>
-                </div>
-            </div>
+                    <div class="chat-container" id="chatContainer">
+                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                            <div class="welcome-greeting">
+                                <span class="icon">🚀</span>Projects
+                            </div>
+                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Organize your work and collaborate with others</p>
+                        </div>
+                    </div>`;
+                break;
+            case 'imageGenerator':
+                content.innerHTML = `
+                    <div class="header">
+                        <div class="header-left">Artifacts</div>
+                        <div class="header-right">
+                            <button class="share-button"><i class="fas fa-cube"></i></button>
+                        </div>
+                    </div>
+                    <div class="chat-container">
+                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                            <div class="welcome-greeting">
+                                <span class="icon">🎨</span>Artifacts
+                            </div>
+                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Create and edit documents, code, and more</p>
+                        </div>
+                    </div>`;
+                break;
+            case 'library':
+                content.innerHTML = `
+                    <div class="header">
+                        <div class="header-left">Library</div>
+                        <div class="header-right">
+                            <button class="share-button"><i class="fas fa-bookmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="chat-container">
+                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                            <div class="welcome-greeting">
+                                <span class="icon">📚</span>Your Library
+                            </div>
+                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Your saved chats and bookmarks</p>
+                        </div>
+                    </div>`;
+                break;
+            default:
+                content.innerHTML = `
+                    <div class="header">
+                        <div class="header-left">Claude</div>
+                        <div class="header-right">
+                            <button class="share-button" onclick="startNewChat()">
+                                <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat-container" id="chatContainer">
+                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                            <div class="welcome-greeting">
+                                <span class="icon">✨</span>Good evening, Krishna
+                            </div>
+                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6; margin-bottom: 40px;">How can I help you today?</p>
+                        </div>
+                    </div>
+                    <div class="div-typing-box-container">
+                        <div class="typing-box-container">
+                            <div class="flex-Typing-Box">
+                                <div class="input-box">
+                                    <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
+                                    <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+                                </div>
+                                <div class="div-picture-Button">
+                                    <button class="picture-Button">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="div-instructions">
+                                <p><span class="instructions">Claude can make mistakes. Check important info.</span></p>
+                            </div>
+                        </div>
+                    </div>`;
+        }
+    });
 
-            <!-- Input Area -->
-            <div class="input-area border-t claude-border">
-                <div class="px-4 py-4 mx-auto" style="max-width: 768px;">
-                    <div class="relative">
-                        <div class="flex items-end space-x-3">
-                            <div class="flex-1 relative">
-                                <textarea
-                                    id="message-input"
-                                    placeholder="Message remindME..."
-                                    class="claude-input w-full px-4 py-3 pr-12 rounded-xl resize-none scrollbar-hide text-sm"
-                                    rows="1"
-                                    style="min-height: 48px; max-height: 120px;"
-                                    aria-label="Message input"
-                                ></textarea>
-                                <button
-                                    id="send-button"
-                                    class="claude-send-button absolute right-2 bottom-2 p-2 rounded-lg"
-                                    disabled
-                                    aria-label="Send message"
-                                >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-2 px-1">
-                            <div class="flex items-center space-x-2">
-                                <button id="attach-file" class="claude-button p-1 rounded claude-text-secondary hover:text-current" aria-label="Attach file">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="claude-text-secondary text-xs">
-                                <span id="char-count">0</span> characters
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+    function startNewChat() {
+        sessionId = 'session-' + Date.now();
+        var chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            // Clear chat messages but keep the welcome message
+            var messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
+            messageContainers.forEach(function(container) {
+                container.remove();
+            });
+        }
+        
+        fetch('/api/new-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId
+            })
+        })
+        .catch(error => {
+            console.error('Error starting new chat:', error);
+        });
+    }
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="claude-sidebar w-80 sidebar-transition transform translate-x-full absolute right-0 top-0 h-full z-10 shadow-xl">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-semibold claude-text">Today's Overview</h2>
-                    <button id="sidebar-close" class="claude-button p-2 rounded-lg" aria-label="Close sidebar">
-                        <svg class="w-5 h-5 claude-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="space-y-6">
-                    <!-- Today's Date -->
-                    <div class="sidebar-card">
-                        <h3 class="text-sm font-medium claude-text-secondary mb-2">Today</h3>
-                        <p id="current-date" class="claude-text font-medium"></p>
-                    </div>
-                    
-                    <!-- Quick Stats -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="sidebar-card">
-                            <p class="text-xs claude-text-secondary">Messages</p>
-                            <p id="message-count" class="text-lg font-semibold claude-text">0</p>
-                        </div>
-                        <div class="sidebar-card">
-                            <p class="text-xs claude-text-secondary">Session</p>
-                            <p id="session-time" class="text-lg font-semibold claude-text">0m</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Session Info -->
-                    <div class="sidebar-card">
-                        <h3 class="text-sm font-medium claude-text-secondary mb-3">Session</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-xs claude-text-secondary">Started</span>
-                                <span id="session-start" class="text-xs claude-text"></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-xs claude-text-secondary">Status</span>
-                                <span class="text-xs text-green-600 flex items-center">
-                                    <span class="status-indicator status-active"></span>
-                                    Active
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Upcoming Features -->
-                    <div class="sidebar-card">
-                        <h3 class="text-sm font-medium claude-text-secondary mb-3">Upcoming</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="feature-indicator feature-orange"></div>
-                                <span class="text-xs claude-text-secondary">Reminders</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="feature-indicator feature-blue"></div>
-                                <span class="text-xs claude-text-secondary">File uploads</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="feature-indicator feature-purple"></div>
-                                <span class="text-xs claude-text-secondary">Smart categorization</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    </div>
-
-    <!-- Hidden file input -->
-    <input type="file" id="file-input" multiple accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;" aria-hidden="true">
-
-    <!-- Loading Indicator -->
-    <div id="loading" class="loading-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div class="loading-card flex items-center space-x-3">
-            <div class="flex space-x-1">
-                <div class="typing-indicator"></div>
-                <div class="typing-indicator"></div>
-                <div class="typing-indicator"></div>
-            </div>
-            <span class="claude-text">AI is thinking...</span>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
+    // Initial load
+    window.dispatchEvent(new Event('hashchange'));
+</script>
 </body>
 </html>
