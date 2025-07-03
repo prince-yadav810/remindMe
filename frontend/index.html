@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>remindME - AI Personal Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .message-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm">
+        <div class="flex items-center justify-between max-w-7xl mx-auto">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">rM</span>
+                </div>
+                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">remindME</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex max-w-7xl mx-auto relative">
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Chat Messages Container -->
+            <div id="chat-container" class="chat-container flex-1 overflow-y-auto scrollbar-hide px-4 py-6">
+                <div id="messages" class="space-y-4 max-w-4xl mx-auto">
+                    <!-- Welcome Message -->
+                    <div class="message-animation">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white font-bold text-sm">AI</span>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-gray-700 message-bubble">
+                                <p class="text-gray-900 dark:text-white leading-relaxed">
+                                    Hi! I'm your AI assistant. I can help you manage reminders, answer questions, and organize your information. What would you like to do today?
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="relative">
+                        <div class="flex items-end space-x-3">
+                            <div class="flex-1 relative">
+                                <textarea
+                                    id="message-input"
+                                    placeholder="Type your message..."
+                                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none scrollbar-hide"
+                                    rows="1"
+                                    style="min-height: 52px; max-height: 120px;"
+                                ></textarea>
+                                <button
+                                    id="send-button"
+                                    class="absolute right-3 bottom-3 p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 rounded-lg transition-colors"
+                                    disabled
+                                >
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 sidebar-transition transform translate-x-full absolute right-0 top-0 h-full z-10">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Overview</h2>
+                    <button id="sidebar-close" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Today's Date -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Today</h3>
+                        <p id="current-date" class="text-gray-900 dark:text-white"></p>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                            <p class="text-sm text-blue-600 dark:text-blue-400">Messages</p>
+                            <p id="message-count" class="text-lg font-semibold text-blue-700 dark:text-blue-300">0</p>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                            <p class="text-sm text-green-600 dark:text-green-400">Session</p>
+                            <p id="session-time" class="text-lg font-semibold text-green-700 dark:text-green-300">0m</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Placeholder for future features -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</h3>
+                        <div class="space-y-2">
+                            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Reminders will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+            <div class="flex space-x-1">
+                <div class="typing-indicator"></div>
+                <div class="typing-indicator"></div>
+                <div class="typing-indicator"></div>
+            </div>
+            <span class="text-gray-900 dark:text-white">AI is thinking...</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
