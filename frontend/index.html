@@ -5,110 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>remindME - AI Personal Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        .message-animation {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .typing-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #6b7280;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-        
-        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-        
-        .chat-container {
-            height: calc(100vh - 200px);
-        }
-        
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        .message-bubble {
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#e97749">
+    <meta name="description" content="remindME - AI-powered personal assistant for managing reminders, tasks, and information">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPHN0eWxlPgouZmlyc3QtbGV0dGVyIHsgZm9udC1mYW1pbHk6IEludGVyLCBzYW5zLXNlcmlmOyBmb250LXNpemU6IDE4cHg7IGZvbnQtd2VpZ2h0OiA2MDA7IGZpbGw6IHdoaXRlOyB0ZXh0LWFuY2hvcjogbWlkZGxlOyBkb21pbmFudC1iYXNlbGluZTogY2VudHJhbDsgfQo8L3N0eWxlPgo8dGV4dCB4PSIxNiIgeT0iMTYiIGNsYXNzPSJmaXJzdC1sZXR0ZXIiPnJNPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMzIiIHkyPSIzMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlOTc3NDkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZjk3MzE2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+<body class="claude-bg transition-colors duration-300">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm">
-        <div class="flex items-center justify-between max-w-7xl mx-auto">
+    <header class="claude-header px-4 py-3 shadow-sm">
+        <div class="flex items-center justify-between max-w-6xl mx-auto">
             <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-bold text-sm">rM</span>
+                <div class="logo w-7 h-7 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-semibold text-xs">rM</span>
                 </div>
-                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">remindME</h1>
+                <h1 class="text-lg font-semibold claude-text">remindME</h1>
             </div>
-            <div class="flex items-center space-x-3">
-                <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <nav class="flex items-center space-x-2" role="navigation" aria-label="Main navigation">
+                <button id="new-chat" class="claude-button px-3 py-2 rounded-lg text-sm font-medium claude-text" aria-label="Start new chat">
+                    New Chat
+                </button>
+                <button id="sidebar-toggle" class="claude-button p-2 rounded-lg" aria-label="Toggle sidebar">
+                    <svg class="w-5 h-5 claude-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-                <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                <button id="theme-toggle" class="claude-button p-2 rounded-lg" aria-label="Toggle theme">
+                    <svg class="w-5 h-5 claude-text-secondary hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg class="w-5 h-5 claude-text-secondary block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                     </svg>
                 </button>
-            </div>
+            </nav>
         </div>
     </header>
 
-    <div class="flex max-w-7xl mx-auto relative">
+    <div class="flex max-w-6xl mx-auto relative min-h-screen">
         <!-- Main Chat Area -->
-        <div class="flex-1 flex flex-col">
+        <main class="flex-1 flex flex-col">
             <!-- Chat Messages Container -->
-            <div id="chat-container" class="chat-container flex-1 overflow-y-auto scrollbar-hide px-4 py-6">
-                <div id="messages" class="space-y-4 max-w-4xl mx-auto">
+            <div id="chat-container" class="chat-container flex-1 overflow-y-auto px-4 py-6">
+                <div id="messages" class="space-y-6 mx-auto" style="max-width: 768px;">
                     <!-- Welcome Message -->
                     <div class="message-animation">
-                        <div class="flex items-start space-x-3">
-                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-white font-bold text-sm">AI</span>
+                        <div class="flex items-start space-x-4">
+                            <div class="message-avatar ai-avatar">
+                                <span>AI</span>
                             </div>
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-gray-700 message-bubble">
-                                <p class="text-gray-900 dark:text-white leading-relaxed">
-                                    Hi! I'm your AI assistant. I can help you manage reminders, answer questions, and organize your information. What would you like to do today?
-                                </p>
+                            <div class="ai-message rounded-xl px-4 py-3 message-bubble">
+                                <div class="message-content claude-text">
+                                    <p>Hi! I'm your AI assistant. I can help you manage reminders, answer questions, and organize your information. What would you like to do today?</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -116,88 +65,132 @@
             </div>
 
             <!-- Input Area -->
-            <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-4">
-                <div class="max-w-4xl mx-auto">
+            <div class="input-area border-t claude-border">
+                <div class="px-4 py-4 mx-auto" style="max-width: 768px;">
                     <div class="relative">
                         <div class="flex items-end space-x-3">
                             <div class="flex-1 relative">
                                 <textarea
                                     id="message-input"
-                                    placeholder="Type your message..."
-                                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none scrollbar-hide"
+                                    placeholder="Message remindME..."
+                                    class="claude-input w-full px-4 py-3 pr-12 rounded-xl resize-none scrollbar-hide text-sm"
                                     rows="1"
-                                    style="min-height: 52px; max-height: 120px;"
+                                    style="min-height: 48px; max-height: 120px;"
+                                    aria-label="Message input"
                                 ></textarea>
                                 <button
                                     id="send-button"
-                                    class="absolute right-3 bottom-3 p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 rounded-lg transition-colors"
+                                    class="claude-send-button absolute right-2 bottom-2 p-2 rounded-lg"
                                     disabled
+                                    aria-label="Send message"
                                 >
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                     </svg>
                                 </button>
                             </div>
                         </div>
+                        <div class="flex items-center justify-between mt-2 px-1">
+                            <div class="flex items-center space-x-2">
+                                <button id="attach-file" class="claude-button p-1 rounded claude-text-secondary hover:text-current" aria-label="Attach file">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="claude-text-secondary text-xs">
+                                <span id="char-count">0</span> characters
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
         <!-- Sidebar -->
-        <div id="sidebar" class="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 sidebar-transition transform translate-x-full absolute right-0 top-0 h-full z-10">
-            <div class="p-4">
+        <aside id="sidebar" class="claude-sidebar w-80 sidebar-transition transform translate-x-full absolute right-0 top-0 h-full z-10 shadow-xl">
+            <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Overview</h2>
-                    <button id="sidebar-close" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <h2 class="text-lg font-semibold claude-text">Today's Overview</h2>
+                    <button id="sidebar-close" class="claude-button p-2 rounded-lg" aria-label="Close sidebar">
+                        <svg class="w-5 h-5 claude-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
                 
                 <div class="space-y-6">
                     <!-- Today's Date -->
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Today</h3>
-                        <p id="current-date" class="text-gray-900 dark:text-white"></p>
+                    <div class="sidebar-card">
+                        <h3 class="text-sm font-medium claude-text-secondary mb-2">Today</h3>
+                        <p id="current-date" class="claude-text font-medium"></p>
                     </div>
                     
                     <!-- Quick Stats -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                            <p class="text-sm text-blue-600 dark:text-blue-400">Messages</p>
-                            <p id="message-count" class="text-lg font-semibold text-blue-700 dark:text-blue-300">0</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="sidebar-card">
+                            <p class="text-xs claude-text-secondary">Messages</p>
+                            <p id="message-count" class="text-lg font-semibold claude-text">0</p>
                         </div>
-                        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                            <p class="text-sm text-green-600 dark:text-green-400">Session</p>
-                            <p id="session-time" class="text-lg font-semibold text-green-700 dark:text-green-300">0m</p>
+                        <div class="sidebar-card">
+                            <p class="text-xs claude-text-secondary">Session</p>
+                            <p id="session-time" class="text-lg font-semibold claude-text">0m</p>
                         </div>
                     </div>
                     
-                    <!-- Placeholder for future features -->
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</h3>
+                    <!-- Session Info -->
+                    <div class="sidebar-card">
+                        <h3 class="text-sm font-medium claude-text-secondary mb-3">Session</h3>
                         <div class="space-y-2">
-                            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                <p class="text-sm text-gray-600 dark:text-gray-300">Reminders will appear here</p>
+                            <div class="flex justify-between">
+                                <span class="text-xs claude-text-secondary">Started</span>
+                                <span id="session-start" class="text-xs claude-text"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs claude-text-secondary">Status</span>
+                                <span class="text-xs text-green-600 flex items-center">
+                                    <span class="status-indicator status-active"></span>
+                                    Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Features -->
+                    <div class="sidebar-card">
+                        <h3 class="text-sm font-medium claude-text-secondary mb-3">Upcoming</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="feature-indicator feature-orange"></div>
+                                <span class="text-xs claude-text-secondary">Reminders</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="feature-indicator feature-blue"></div>
+                                <span class="text-xs claude-text-secondary">File uploads</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="feature-indicator feature-purple"></div>
+                                <span class="text-xs claude-text-secondary">Smart categorization</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
 
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" multiple accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;" aria-hidden="true">
+
     <!-- Loading Indicator -->
-    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+    <div id="loading" class="loading-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="loading-card flex items-center space-x-3">
             <div class="flex space-x-1">
                 <div class="typing-indicator"></div>
                 <div class="typing-indicator"></div>
                 <div class="typing-indicator"></div>
             </div>
-            <span class="text-gray-900 dark:text-white">AI is thinking...</span>
+            <span class="claude-text">AI is thinking...</span>
         </div>
     </div>
 
