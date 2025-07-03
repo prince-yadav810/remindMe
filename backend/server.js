@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,7 +8,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet());
@@ -62,7 +63,17 @@ app.post('/api/chat', async (req, res) => {
     const { message, sessionId } = req.body;
 
     if (!message || !sessionId) {
-      return res.status(400).json({ error: 'Message and sessionId are required' });
+      return res.status(400).json({ 
+        error: 'Message and sessionId are required',
+        success: false 
+      });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ 
+        error: 'AI service not configured. Please check server configuration.',
+        success: false 
+      });
     }
 
     // Find or create conversation
@@ -78,11 +89,21 @@ app.post('/api/chat', async (req, res) => {
       timestamp: new Date()
     });
 
-    // Prepare context for Gemini
+    // Prepare context for Gemini with enhanced prompt
     const conversationHistory = conversation.messages.map(msg => ({
       role: msg.role,
       parts: [{ text: msg.content }]
     }));
+
+    // Enhanced system prompt for better Claude-like responses
+    const systemPrompt = `You are a helpful AI assistant called remindME. You help users manage their daily tasks, reminders, and information. You should be:
+    - Conversational and friendly
+    - Helpful and informative
+    - Concise but thorough when needed
+    - Able to help with reminders, scheduling, and organization
+    - Supportive of productivity and time management
+    
+    Current conversation context: This is a chat session where you help the user with their daily needs.`;
 
     // Get AI response
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -90,12 +111,14 @@ app.post('/api/chat', async (req, res) => {
     const chat = model.startChat({
       history: conversationHistory.slice(0, -1), // Exclude the current message
       generationConfig: {
-        maxOutputTokens: 1000,
+        maxOutputTokens: 1500,
         temperature: 0.7,
+        topP: 0.9,
+        topK: 40,
       },
     });
 
-    const result = await chat.sendMessage(message);
+    const result = await chat.sendMessage(systemPrompt + '\n\nUser: ' + message);
     const aiResponse = result.response.text();
 
     // Add AI response to conversation
@@ -112,14 +135,28 @@ app.post('/api/chat', async (req, res) => {
     res.json({
       response: aiResponse,
       sessionId: sessionId,
-      success: true
+      success: true,
+      messageCount: conversation.messages.length
     });
 
   } catch (error) {
     console.error('Chat error:', error);
+    
+    // Enhanced error handling
+    let errorMessage = 'I apologize, but I encountered an error. Please try again.';
+    
+    if (error.message.includes('API key')) {
+      errorMessage = 'AI service is not properly configured. Please contact support.';
+    } else if (error.message.includes('quota')) {
+      errorMessage = 'AI service is temporarily unavailable due to high demand. Please try again later.';
+    } else if (error.message.includes('network') || error.message.includes('ECONNRESET')) {
+      errorMessage = 'Connection error. Please check your internet connection and try again.';
+    }
+    
     res.status(500).json({ 
-      error: 'Failed to process chat message',
-      details: error.message 
+      error: errorMessage,
+      success: false,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -131,23 +168,107 @@ app.get('/api/conversation/:sessionId', async (req, res) => {
     const conversation = await Conversation.findOne({ sessionId });
     
     if (!conversation) {
-      return res.json({ messages: [] });
+      return res.json({ 
+        messages: [],
+        sessionId: sessionId,
+        success: true 
+      });
     }
 
-    res.json({ messages: conversation.messages });
+    res.json({ 
+      messages: conversation.messages,
+      sessionId: sessionId,
+      success: true,
+      messageCount: conversation.messages.length
+    });
   } catch (error) {
     console.error('Get conversation error:', error);
-    res.status(500).json({ error: 'Failed to fetch conversation' });
+    res.status(500).json({ 
+      error: 'Failed to fetch conversation',
+      success: false 
+    });
+  }
+});
+
+// Clear conversation history (for New Chat functionality)
+app.delete('/api/conversation/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    await Conversation.findOneAndDelete({ sessionId });
+    
+    res.json({ 
+      success: true,
+      message: 'Conversation cleared successfully' 
+    });
+  } catch (error) {
+    console.error('Clear conversation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to clear conversation',
+      success: false 
+    });
+  }
+});
+
+// Get conversation statistics
+app.get('/api/stats/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const conversation = await Conversation.findOne({ sessionId });
+    
+    if (!conversation) {
+      return res.json({ 
+        messageCount: 0,
+        createdAt: new Date(),
+        success: true 
+      });
+    }
+
+    res.json({ 
+      messageCount: conversation.messages.length,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
+      success: true
+    });
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch statistics',
+      success: false 
+    });
   }
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    geminiConfigured: !!process.env.GEMINI_API_KEY 
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const geminiConfigured = !!process.env.GEMINI_API_KEY;
+    
+    // Count total conversations
+    const totalConversations = await Conversation.countDocuments();
+    
+    res.json({ 
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: mongoStatus,
+        ai: geminiConfigured ? 'configured' : 'not configured'
+      },
+      stats: {
+        totalConversations: totalConversations,
+        uptime: process.uptime()
+      },
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: 'Health check failed'
+    });
+  }
 });
 
 // Serve frontend for all other routes
