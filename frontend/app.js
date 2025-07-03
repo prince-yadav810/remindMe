@@ -29,6 +29,9 @@ class RemindMeApp {
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarClose = document.getElementById('sidebar-close');
         const themeToggle = document.getElementById('theme-toggle');
+        const newChatButton = document.getElementById('new-chat');
+        const attachFileButton = document.getElementById('attach-file');
+        const fileInput = document.getElementById('file-input');
         
         // Send message on button click
         sendButton.addEventListener('click', () => this.sendMessage());
@@ -41,14 +44,17 @@ class RemindMeApp {
             }
         });
         
-        // Enable/disable send button based on input
+        // Enable/disable send button and update character count
         messageInput.addEventListener('input', () => {
-            const hasText = messageInput.value.trim().length > 0;
+            const text = messageInput.value.trim();
+            const hasText = text.length > 0;
             sendButton.disabled = !hasText || this.isTyping;
-            sendButton.classList.toggle('bg-blue-500', hasText && !this.isTyping);
-            sendButton.classList.toggle('hover:bg-blue-600', hasText && !this.isTyping);
-            sendButton.classList.toggle('bg-gray-300', !hasText || this.isTyping);
-            sendButton.classList.toggle('dark:bg-gray-600', !hasText || this.isTyping);
+            
+            // Update character count
+            this.updateCharacterCount(messageInput.value.length);
+            
+            // Update send button styling
+            this.updateSendButton();
         });
         
         // Sidebar toggle
@@ -58,6 +64,18 @@ class RemindMeApp {
         // Theme toggle
         themeToggle.addEventListener('click', () => this.toggleTheme());
         
+        // New chat button
+        newChatButton.addEventListener('click', () => this.startNewChat());
+        
+        // File attachment
+        attachFileButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            this.handleFileUpload(e.target.files);
+        });
+        
         // Close sidebar when clicking outside
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
@@ -65,6 +83,21 @@ class RemindMeApp {
             
             if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
                 this.closeSidebar();
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K for new chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                this.startNewChat();
+            }
+            
+            // Ctrl/Cmd + B for sidebar toggle
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                this.toggleSidebar();
             }
         });
     }
@@ -144,12 +177,12 @@ class RemindMeApp {
         const isUser = role === 'user';
         
         messageDiv.innerHTML = `
-            <div class="flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}">
-                <div class="w-8 h-8 ${isUser ? 'bg-gray-600 dark:bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-purple-600'} rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="text-white font-bold text-sm">${isUser ? 'U' : 'AI'}</span>
+            <div class="flex items-start space-x-4">
+                <div class="w-8 h-8 ${isUser ? 'bg-gray-500' : 'bg-gradient-to-r from-orange-500 to-red-500'} rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-semibold text-xs">${isUser ? 'U' : 'AI'}</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-gray-700 message-bubble">
-                    <p class="text-gray-900 dark:text-white leading-relaxed">${this.formatMessage(content)}</p>
+                <div class="${isUser ? 'user-message' : 'ai-message'} rounded-xl px-4 py-3 message-bubble">
+                    <div class="claude-text leading-relaxed">${this.formatMessage(content)}</div>
                 </div>
             </div>
         `;
@@ -177,11 +210,11 @@ class RemindMeApp {
         typingDiv.className = 'message-animation';
         
         typingDiv.innerHTML = `
-            <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="text-white font-bold text-sm">AI</span>
+            <div class="flex items-start space-x-4">
+                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-semibold text-xs">AI</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="ai-message rounded-xl px-4 py-3">
                     <div class="flex space-x-1">
                         <div class="typing-indicator"></div>
                         <div class="typing-indicator"></div>
@@ -213,10 +246,76 @@ class RemindMeApp {
         const hasText = messageInput.value.trim().length > 0;
         
         sendButton.disabled = !hasText || this.isTyping;
-        sendButton.classList.toggle('bg-blue-500', hasText && !this.isTyping);
-        sendButton.classList.toggle('hover:bg-blue-600', hasText && !this.isTyping);
-        sendButton.classList.toggle('bg-gray-300', !hasText || this.isTyping);
-        sendButton.classList.toggle('dark:bg-gray-600', !hasText || this.isTyping);
+        
+        // Update button styling based on state
+        if (hasText && !this.isTyping) {
+            sendButton.className = 'claude-send-button absolute right-2 bottom-2 p-2 rounded-lg transition-colors';
+        } else {
+            sendButton.className = 'claude-send-button absolute right-2 bottom-2 p-2 rounded-lg transition-colors opacity-50 cursor-not-allowed';
+        }
+    }
+    
+    updateCharacterCount(count) {
+        const charCount = document.getElementById('char-count');
+        charCount.textContent = count;
+    }
+    
+    startNewChat() {
+        // Clear current conversation
+        const messagesContainer = document.getElementById('messages');
+        messagesContainer.innerHTML = '';
+        
+        // Reset counters
+        this.messageCount = 0;
+        this.sessionStartTime = Date.now();
+        
+        // Generate new session ID
+        this.sessionId = this.generateSessionId();
+        
+        // Add welcome message
+        this.addWelcomeMessage();
+        
+        // Update UI
+        this.updateMessageCount();
+        this.updateSessionTime();
+        this.updateDateTime();
+        
+        // Focus input
+        const messageInput = document.getElementById('message-input');
+        messageInput.focus();
+    }
+    
+    addWelcomeMessage() {
+        const messagesContainer = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message-animation';
+        
+        messageDiv.innerHTML = `
+            <div class="flex items-start space-x-4">
+                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-semibold text-xs">AI</span>
+                </div>
+                <div class="ai-message rounded-xl px-4 py-3 message-bubble">
+                    <p class="claude-text leading-relaxed">
+                        Hi! I'm your AI assistant. I can help you manage reminders, answer questions, and organize your information. What would you like to do today?
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+    }
+    
+    handleFileUpload(files) {
+        if (files.length === 0) return;
+        
+        // For now, show a message about file upload (to be implemented later)
+        const fileNames = Array.from(files).map(file => file.name).join(', ');
+        this.addMessage('user', `📎 Selected files: ${fileNames}`);
+        this.addMessage('assistant', 'File upload functionality will be available soon! For now, you can describe what you\'d like to do with these files.');
+        
+        // Clear the file input
+        document.getElementById('file-input').value = '';
     }
     
     toggleSidebar() {
