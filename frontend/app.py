@@ -58,8 +58,8 @@ chat_sessions = {}
 
 @app.route('/')
 def index():
-    # Serve your existing Trials3.html
-    return render_template_string(open('Trials3.html').read())
+    # Serve your existing index.html
+    return render_template_string(open('index.html').read())
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
