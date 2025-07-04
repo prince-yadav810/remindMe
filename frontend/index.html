@@ -101,6 +101,7 @@
             top: 16px;
             right: 16px;
             font-size: 20px;
+            margin-right: 18px;
             cursor: pointer;
             transition: opacity 0.3s ease;
             z-index: 10;
@@ -712,7 +713,7 @@
         .logo {
             width: 34px;
             height: 34px;
-            margin-right: 20px;
+            margin-right: 0px;
             display: inline-block;
             object-position: top;
             vertical-align:top;
@@ -1116,13 +1117,17 @@
     }
 
     function formatBotResponse(text) {
-        // Handle different formatting patterns
-        let formatted = text;
+        // Escape HTML to prevent injection
+        let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         
-        // Step 1: Handle bold headings with ** ** (including colons)
-        formatted = formatted.replace(/\*\*(.*?)\*\*:?/g, '<h3 style="color: #c96342; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
+        // Step 1: Handle bold headings with ** ** - must be at start of line or after whitespace
+        formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #c96342; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
         
-        // Step 2: Handle bullet points - convert * items to proper list format
+        // Step 2: Handle headers with ## and ### - must be at start of line
+        formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
+        formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #c96342; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
+        
+        // Step 3: Handle bullet points - convert * items to proper list format
         let lines = formatted.split('\n');
         let inList = false;
         let processedLines = [];
@@ -1130,27 +1135,26 @@
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
             
-            // Check if line starts with * (bullet point)
-            if (line.startsWith('* ')) {
+            // Check if line starts with * followed by space (bullet point)
+            if (/^\*\s+/.test(line)) {
                 if (!inList) {
-                    // Start new list
-                    processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3;">');
+                    processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3; list-style-type: disc;">');
                     inList = true;
                 }
-                // Add list item
-                let listContent = line.substring(2).trim(); // Remove "* "
-                // Check if the list item has bold text
-                listContent = listContent.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #c96342;">$1</strong>');
-                processedLines.push(`<li style="margin: 8px 0; line-height: 1.6;">${listContent}</li>`);
+                // Add list item - remove the * and space
+                let listContent = line.substring(2).trim();
+                // Handle bold text within list items only
+                listContent = listContent.replace(/\*\*([^*]+?)\*\*/g, '<strong style="color: #c96342;">$1</strong>');
+                processedLines.push(`<li style="margin: 8px 0; line-height: 1.6; display: list-item;">${listContent}</li>`);
             } else {
                 if (inList) {
-                    // End current list
                     processedLines.push('</ul>');
                     inList = false;
                 }
-                // Add regular line (if not empty)
                 if (line.length > 0) {
                     processedLines.push(line);
+                } else {
+                    processedLines.push(''); // Preserve empty lines
                 }
             }
         }
@@ -1160,35 +1164,33 @@
             processedLines.push('</ul>');
         }
         
-        formatted = processedLines.join(' ');
+        // Join with line breaks to preserve structure
+        formatted = processedLines.join('\n');
         
-        // Step 3: Handle numbered lists (1. 2. 3.)
-        formatted = formatted.replace(/(\d+\.\s+)(.*?)(?=\s|$)/g, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
+        // Step 4: Handle numbered lists - must be at start of line
+        formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
         
-        // Step 4: Handle emphasis with single asterisks (but not already processed ones)
-        formatted = formatted.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
+        // Step 5: Handle emphasis with single asterisks - but not part of ** or at word boundaries
+        formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
         
-        // Step 5: Handle code blocks with backticks
-        formatted = formatted.replace(/`([^`]+)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
+        // Step 6: Handle code blocks with backticks - single words or phrases
+        formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
         
-        // Step 6: Handle special sections (like bracketed content)
-        formatted = formatted.replace(/\[(.*?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
+        // Step 7: Handle special sections (bracketed content) - only complete brackets
+        formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
         
-        // Step 7: Handle quotations (lines starting with >)
-        formatted = formatted.replace(/^&gt;\s*(.*?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
+        // Step 8: Handle quotations - lines starting with >
+        formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
         
-        // Step 8: Handle headers with ## and ###
-        formatted = formatted.replace(/^###\s+(.*?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
-        formatted = formatted.replace(/^##\s+(.*?)$/gm, '<h3 style="color: #c96342; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
+        // Step 9: Handle line breaks properly - minimal BR usage
+        formatted = formatted.replace(/\n\s*\n/g, '<br><br>'); // Only double newlines become breaks
+        formatted = formatted.replace(/(<\/ul>)\n/g, '$1'); // Remove breaks after lists
+        formatted = formatted.replace(/\n(<ul)/g, '$1'); // Remove breaks before lists
         
-        // Step 9: Handle table-like structures (| separated)
-        formatted = formatted.replace(/\|([^|\n]+)\|([^|\n]+)\|/g, '<div style="display: flex; background-color: #2a2a28; padding: 8px; margin: 4px 0; border-radius: 4px;"><div style="flex: 1; color: #c96342; font-weight: 600;">$1</div><div style="flex: 2; color: #e8e8e3;">$2</div></div>');
+        // Step 10: Clean up any extra spaces but preserve list structure
+        formatted = formatted.replace(/\s*<br>\s*/g, '<br>'); // Clean up breaks
         
-        // Step 10: Handle line breaks properly - avoid excessive breaks
-        formatted = formatted.replace(/\n\s*\n/g, '<br><br>'); // Double newlines become double breaks
-        formatted = formatted.replace(/\n/g, ' '); // Single newlines become spaces
-        
-        return formatted;
+        return formatted.trim();
     }
 
     function sendMessage() {
@@ -1224,7 +1226,7 @@
                     width: 34px; height: 34px; border-radius: 6px; 
                     background: #3a3a38; color: #e8e8e3; 
                     display: flex; align-items: center; justify-content: center;
-                    font-weight: 600; margin-right: 20px; font-size: 14px;
+                    font-weight: 600; margin-right: 0px; font-size: 14px;
                     font-family: 'Inter', sans-serif;
                 `;
                 avatar.textContent = 'K';
@@ -1297,7 +1299,7 @@
                     width: 34px; height: 34px; border-radius: 6px; 
                     background: #c96342; color: #ffffff;
                     display: flex; align-items: center; justify-content: center;
-                    font-weight: bold; margin-right: 20px; font-size: 16px;
+                    font-weight: bold; margin-right: 0px; font-size: 16px;
                 `;
                 botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
                 botAdditionalContent.appendChild(botAvatar);
