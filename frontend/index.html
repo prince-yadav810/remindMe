@@ -32,13 +32,14 @@
         /* Sidebar - Now on the right */
         .sidebar {
             min-width: 280px;
-            background-color: #1f1e1d;
+            background-color: #222121;
             padding: 16px;
             transition: min-width 0.3s ease;
             position: relative;
             z-index: 2;
             order: 2;
             border-left: 1px solid #3a3a38;
+            box-sizing: border-box; /* Ensure consistent width calculation */
         }
 
         .sidebar.collapsed {
@@ -68,13 +69,21 @@
             transition: min-width 0.3s ease;
         }
 
+        /* Updated sidebar-column to cover full width */
+        .sidebar-column {
+            width: 100%;
+            margin-bottom: 16px;
+            padding: 0; /* Remove any padding that might cause width issues */
+        }
+
         .sidebar-header {
             display: flex;
             align-items: center;
             justify-content: flex-start;
             margin-bottom: 24px;
-            width: auto;
+            width: 100%;
             transition: width 0.2s;
+            padding: 0; /* Remove padding */
         }
 
         .sidebar-header h3 {
@@ -92,6 +101,7 @@
             top: 16px;
             right: 16px;
             font-size: 20px;
+            margin-right: 8px;
             cursor: pointer;
             transition: opacity 0.3s ease;
             z-index: 10;
@@ -145,19 +155,24 @@
             text-align: center;
         }
 
-        /* Time Display Styles */
+        /* Sidebar content styling to ensure full width */
+        .sidebar-content {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Time Display Styles - full width */
         .time-display {
-            background-color: #1f1e1d;
+            background-color: #213031;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             text-align: center;
-            min-width: 100%;
+            width: 100%;
+            box-sizing: border-box; /* Ensure padding is included in width */
         }
 
-        .time-display:hover, .reminder-item:hover {
-            background-color: #2e2421;
-        }
 
         .current-time {
             font-size: 28px;
@@ -174,10 +189,13 @@
             font-weight: 400;
         }
 
-        /* Reminder Section Styles */
+        /* Reminder Section Styles - full width */
         .reminder-section {
             flex: 1;
             margin-bottom: 20px;
+            width: 100%;
+            padding: 0; /* Remove any padding */
+            box-sizing: border-box; /* Ensure proper width calculation */
         }
 
         .reminder-title {
@@ -208,7 +226,7 @@
         }
 
         .reminder-item {
-            background-color: #1f1e1d;
+            background-color: #222121;
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 8px;
@@ -216,13 +234,13 @@
         }
 
         .reminder-item:hover {
-            background-color: #2e2421;
+            background-color: #213031;
             border-color: #4a4a48;
         }
 
         .reminder-time {
             font-size: 12px;
-            color: #c96342;
+            color: #4accd1;
             font-weight: 500;
             margin-bottom: 4px;
             font-family: 'Inter', sans-serif;
@@ -296,6 +314,7 @@
             font-size: 12px;
         }
 
+        /* Collapsed sidebar styles */
         .sidebar.collapsed ul li a i {
             margin-right: 0;
         }
@@ -308,8 +327,37 @@
             display: none;
         }
 
+        /* Updated collapsed sidebar actions to show icons */
         .sidebar.collapsed .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: absolute;
+            bottom: 16px;
+            left: 8px;
+            right: 8px;
+            padding-top: 16px;
+            border-top: 1px solid #3a3a38;
+        }
+
+        .sidebar.collapsed .action-btn {
+            background-color: #0f0f0f;
+            padding: 12px;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .action-btn span {
             display: none;
+        }
+
+        .sidebar.collapsed .action-btn i {
+            font-size: 16px;
+            margin: 0;
         }
 
         .sidebar.collapsed .toggle-btn {
@@ -332,14 +380,14 @@
             display: flex;
             position: relative;
             flex-direction: column;
-            background-color: #262624;
+            background-color: #2A2A2A;
             margin: 0;
             border-radius: 0;
             margin-bottom: 0px;
             height: 100vh;
             overflow-y: scroll;
             overflow-x: hidden; 
-            padding-bottom: 10%;
+            padding-bottom: 160px; /* Increased padding to prevent overlap with typing box */
             border-right: 1px solid #3a3a38;
         }
 
@@ -410,7 +458,7 @@
             padding: 0 1rem;
             box-sizing: border-box;
             margin-top: calc(0vh - 56px);
-            margin-bottom: 1px;
+            margin-bottom: 20px; /* Added margin to create space from bottom */
             position: fixed;
             bottom: 0;
             max-width: 100%;
@@ -454,7 +502,7 @@
         }
 
         .input-box:focus-within {
-            border-color: #c96342;
+            border-color: #238588;
         }
 
         .sidebar.collapsed .input-box {
@@ -478,7 +526,7 @@
         }
 
         .input-box button {
-            background-color: #c96342;
+            background-color: #238588;
             color: #ffffff;
             border: none;
             padding: 8px 12px;
@@ -490,7 +538,7 @@
         }
 
         .input-box button:hover {
-            background-color: #b85a3a;
+            background-color: #238588;
         }
 
         .input-box button:disabled {
@@ -510,7 +558,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
-            background-color: #262624;
+            background-color: #2A2A2A;
             position: relative;
             z-index: 2;
             border-bottom: 1px solid #3a3a38;
@@ -526,7 +574,7 @@
         }
 
         .header-right .share-button {
-            background-color: #c96342;
+            background-color: #238588;
             border: none;
             color: #ffffff;
             font-size: 13px;
@@ -539,7 +587,7 @@
         }
 
         .header-right .share-button:hover {
-            background-color: #b85a3a;
+            background-color: #4accd1;
         }
 
         .message-Input {
@@ -582,7 +630,7 @@
         .picture-Button:active {
             background-color: #c96342;
             color: #ffffff;
-            border-color: #c96342;
+            border-color: #238588;
         }
 
         .instructions {
@@ -662,7 +710,7 @@
         .logo {
             width: 34px;
             height: 34px;
-            margin-right: 20px;
+            margin-right: 0px;
             display: inline-block;
             object-position: top;
             vertical-align:top;
@@ -675,7 +723,7 @@
             transition: opacity 0.2s;
             flex-direction: row;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 20px; /* Increased margin between messages */
             align-self:center;
             width: 70%;
             max-width: 700px;
@@ -824,6 +872,81 @@
             padding: 12px 0;
         }
 
+        /* Chat message formatting styles - updated heading sizes */
+        .message h3 {
+            color: #4accd1 !important;
+            font-weight: 600 !important;
+            margin: 20px 0 12px 0 !important;
+            font-size: 18px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .message h4 {
+            color: #e8e8e3 !important;
+            font-weight: 500 !important;
+            margin: 16px 0 8px 0 !important;
+            font-size: 16px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .message ul {
+            margin: 12px 0 !important;
+            padding-left: 20px !important;
+            color: #e8e8e3 !important;
+        }
+
+        .message li {
+            margin: 8px 0 !important;
+            line-height: 1.6 !important;
+        }
+
+        .message li strong {
+            color: #4accd1 !important;
+            font-weight: 600 !important;
+        }
+
+        .message code {
+            background-color: #3a3a38 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 13px !important;
+            color: #e8e8e3 !important;
+        }
+
+        .message blockquote {
+            border-left: 3px solid #c96342 !important;
+            padding: 8px 16px !important;
+            margin: 8px 0 !important;
+            background-color: #2a2a28 !important;
+            color: #e8e8e3 !important;
+            font-style: italic !important;
+        }
+
+        .message em {
+            color: #4accd1 !important;
+            font-style: italic !important;
+        }
+
+        /* Formatted sections and special content */
+        .message div[style*="background-color: #2a2a28"] {
+            background-color: #2a2a28 !important;
+            border-left: 3px solid #4accd1 !important;
+            padding: 12px !important;
+            margin: 8px 0 !important;
+            border-radius: 4px !important;
+            color: #e8e8e3 !important;
+        }
+
+        /* Table-like structures */
+        .message div[style*="display: flex"] {
+            display: flex !important;
+            background-color: #2a2a28 !important;
+            padding: 8px !important;
+            margin: 4px 0 !important;
+            border-radius: 4px !important;
+        }
+
         .error-message {
             color: #ff6b6b;
             background-color: #2a1a1a;
@@ -884,11 +1007,11 @@
           <div class="sidebar-actions">
               <button class="action-btn" onclick="setReminder()">
                   <i class="fas fa-plus"></i>
-                  Set Reminder
+                  <span>Set Reminder</span>
               </button>
               <button class="action-btn" onclick="viewHistory()">
                   <i class="fas fa-history"></i>
-                  View History
+                  <span>View History</span>
               </button>
           </div>
       </nav>
@@ -990,6 +1113,83 @@
         // You can implement a modal or navigate to a history page here
     }
 
+    function formatBotResponse(text) {
+        // Escape HTML to prevent injection
+        let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        
+        // Step 1: Handle bold headings with ** ** - must be at start of line or after whitespace
+        formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
+        
+        // Step 2: Handle headers with ## and ### - must be at start of line
+        formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
+        formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
+        
+        // Step 3: Handle bullet points - convert * items to proper list format
+        let lines = formatted.split('\n');
+        let inList = false;
+        let processedLines = [];
+        
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            
+            // Check if line starts with * followed by space (bullet point)
+            if (/^\*\s+/.test(line)) {
+                if (!inList) {
+                    processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3; list-style-type: disc;">');
+                    inList = true;
+                }
+                // Add list item - remove the * and space
+                let listContent = line.substring(2).trim();
+                // Handle bold text within list items only
+                listContent = listContent.replace(/\*\*([^*]+?)\*\*/g, '<strong style="color: #4accd1;">$1</strong>');
+                processedLines.push(`<li style="margin: 8px 0; line-height: 1.6; display: list-item;">${listContent}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push('</ul>');
+                    inList = false;
+                }
+                if (line.length > 0) {
+                    processedLines.push(line);
+                } else {
+                    processedLines.push(''); // Preserve empty lines
+                }
+            }
+        }
+        
+        // Close any remaining list
+        if (inList) {
+            processedLines.push('</ul>');
+        }
+        
+        // Join with line breaks to preserve structure
+        formatted = processedLines.join('\n');
+        
+        // Step 4: Handle numbered lists - must be at start of line
+        formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
+        
+        // Step 5: Handle emphasis with single asterisks - but not part of ** or at word boundaries
+        formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
+        
+        // Step 6: Handle code blocks with backticks - single words or phrases
+        formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
+        
+        // Step 7: Handle special sections (bracketed content) - only complete brackets
+        formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
+        
+        // Step 8: Handle quotations - lines starting with >
+        formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
+        
+        // Step 9: Handle line breaks properly - minimal BR usage
+        formatted = formatted.replace(/\n\s*\n/g, '<br><br>'); // Only double newlines become breaks
+        formatted = formatted.replace(/(<\/ul>)\n/g, '$1'); // Remove breaks after lists
+        formatted = formatted.replace(/\n(<ul)/g, '$1'); // Remove breaks before lists
+        
+        // Step 10: Clean up any extra spaces but preserve list structure
+        formatted = formatted.replace(/\s*<br>\s*/g, '<br>'); // Clean up breaks
+        
+        return formatted.trim();
+    }
+
     function sendMessage() {
         var messageInput = document.getElementById('messageInput');
         var messageText = messageInput.textContent.trim();
@@ -1023,7 +1223,7 @@
                     width: 34px; height: 34px; border-radius: 6px; 
                     background: #3a3a38; color: #e8e8e3; 
                     display: flex; align-items: center; justify-content: center;
-                    font-weight: 600; margin-right: 20px; font-size: 14px;
+                    font-weight: 600; margin-right: 0px; font-size: 14px;
                     font-family: 'Inter', sans-serif;
                 `;
                 avatar.textContent = 'K';
@@ -1080,8 +1280,9 @@
                     throw new Error(data.error);
                 }
 
-                // Create bot response
-                var botMessage = `<strong>Bot:</strong><br>${data.response.replace(/\n/g, "<br>")}`;
+                // Create bot response with formatting
+                var formattedResponse = formatBotResponse(data.response);
+                var botMessage = `<strong>Bot:</strong><br>${formattedResponse}`;
                 
                 var botMessageContainer = document.createElement('div');
                 botMessageContainer.classList.add('message-container');
@@ -1093,9 +1294,9 @@
                 var botAvatar = document.createElement('div');
                 botAvatar.style.cssText = `
                     width: 34px; height: 34px; border-radius: 6px; 
-                    background: #c96342; color: #ffffff;
+                    background: #238588; color: #ffffff;
                     display: flex; align-items: center; justify-content: center;
-                    font-weight: bold; margin-right: 20px; font-size: 16px;
+                    font-weight: bold; margin-right: 0px; font-size: 16px;
                 `;
                 botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
                 botAdditionalContent.appendChild(botAvatar);
