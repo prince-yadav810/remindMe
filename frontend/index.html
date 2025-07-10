@@ -188,86 +188,6 @@
             font-weight: 400;
         }
 
-        /* Files Section */
-        .files-section {
-            margin-bottom: 24px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .files-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #e8e8e3;
-            margin-bottom: 16px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .files-list {
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-
-        .files-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .files-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .files-list::-webkit-scrollbar-thumb {
-            background: #3a3a38;
-            border-radius: 2px;
-        }
-
-        .file-item {
-            background-color: #2a2a28;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .file-item:hover {
-            background-color: #3a3a38;
-        }
-
-        .file-name {
-            font-size: 13px;
-            color: #e8e8e3;
-            font-weight: 500;
-            margin-bottom: 4px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .file-info {
-            font-size: 11px;
-            color: #b8b8b3;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .file-status {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 500;
-        }
-
-        .file-status.completed {
-            background-color: #4accd1;
-            color: #1f1e1d;
-        }
-
-        .file-status.processing {
-            background-color: #c96342;
-            color: #ffffff;
-        }
-
         /* Reminder Section Styles - full width */
         .reminder-section {
             flex: 1;
@@ -810,10 +730,6 @@
             overflow-wrap: break-word;
         }
 
-        .message-container.visible {
-            opacity: 1;
-        }
-
         .dropdown-logo {
             display: flex;
             width: 20px;
@@ -955,56 +871,6 @@
             padding: 12px 0;
         }
 
-        /* File upload message styles */
-        .file-upload-message {
-            background-color: #2a2a28;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 12px 0;
-            border-left: 3px solid #4accd1;
-        }
-
-        .file-upload-success {
-            color: #4accd1;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .file-upload-info {
-            color: #b8b8b3;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .file-upload-summary {
-            color: #e8e8e3;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        /* File upload progress */
-        .upload-progress {
-            background-color: #2a2a28;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 12px 0;
-            border-left: 3px solid #c96342;
-        }
-
-        .upload-progress-bar {
-            background-color: #3a3a38;
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .upload-progress-fill {
-            background-color: #4accd1;
-            height: 100%;
-            transition: width 0.3s ease;
-        }
-
         /* Chat message formatting styles - updated heading sizes */
         .message h3 {
             color: #4accd1 !important;
@@ -1091,58 +957,46 @@
             font-size: 14px;
         }
 
-        /* Hidden file input */
-        .hidden-file-input {
-            display: none;
+        /* Notification and Animation Styles */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
 
-        /* Drag and drop styles */
-        .drag-overlay {
-            position: fixed;
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .processing-reminder {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .processing-reminder::before {
+            content: '';
+            position: absolute;
             top: 0;
-            left: 0;
+            left: -100%;
             width: 100%;
             height: 100%;
-            background-color: rgba(35, 133, 136, 0.1);
-            border: 2px dashed #4accd1;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            background: linear-gradient(90deg, transparent, rgba(74, 204, 209, 0.3), transparent);
+            animation: slide 2s infinite;
         }
-
-        .drag-overlay.active {
-            display: flex;
-        }
-
-        .drag-message {
-            background-color: #238588;
-            color: #ffffff;
-            padding: 20px 40px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-            
-            .mobileDiv {
-                display: block;
-            }
-            
-            .message-container {
-                width: 90%;
-            }
-            
-            .typing-box-container {
-                width: 95%;
-                padding-bottom: 80px;
-            }
+        
+        @keyframes slide {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
     </style>
 </head>
@@ -1169,31 +1023,11 @@
               </div>
               
               <div class="sidebar-column">
-                  <!-- Files Section -->
-                  <div class="files-section">
-                      <h4 class="files-title">Recent Files</h4>
-                      <div class="files-list" id="filesList">
-                          <div style="text-align: center; color: #8a8a88; font-size: 12px; padding: 16px;">
-                              No files uploaded yet
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              
-              <div class="sidebar-column">
                   <!-- Reminder Section -->
                   <div class="reminder-section">
                       <h4 class="reminder-title">Today's Reminders</h4>
                       <div class="reminder-list" id="reminderList">
-                          <div class="reminder-item">
-                              <div class="reminder-time">2:30 PM</div>
-                              <div class="reminder-text">Team meeting with developers</div>
-                          </div>
-                          <div class="reminder-item">
-                              <div class="reminder-time">5:00 PM</div>
-                              <div class="reminder-text">Review project documentation</div>
-                          </div>
-                          <div class="no-reminders" style="display: none;">
+                          <div class="no-reminders">
                               <i class="fas fa-calendar-check"></i>
                               <p>No reminders for today</p>
                           </div>
@@ -1225,7 +1059,7 @@
         <ul>
           <li><a href="#chatBot"><i class="fas fa-home"></i><span class="sidebar-text">Chat</span></a></li>
               <li><a href="#explore"><i class="fas fa-compass"></i><span class="sidebar-text">Explore</span></a></li>
-              <li><a href="#imageGenerator"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Generator</span></a></li>
+              <li><a href="#imageGenerator"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Artifacts</span></a></li>
               <li><a href="#library"><i class="fas fa-cog"></i><span class="sidebar-text">Library</span></a></li>
         </ul>
       </div>
@@ -1233,302 +1067,89 @@
   </div>
  </div>
 
-    <!-- Hidden file input -->
-    <input type="file" id="fileInput" class="hidden-file-input" 
-           accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png,.gif" 
-           onchange="handleFileUpload(event)">
-
-    <!-- Drag and drop overlay -->
-    <div class="drag-overlay" id="dragOverlay">
-        <div class="drag-message">
-            <i class="fas fa-cloud-upload-alt" style="margin-right: 12px;"></i>
-            Drop your files here to upload
-        </div>
-    </div>
-
 <script>
-    // Session management
-    let sessionId = 'session-' + Date.now();
-    let isLoading = false;
-    let uploadedFiles = [];
+// Enhanced JavaScript for remindME with Clean Dual API System
 
-    // Time and Date functionality
-    function updateTimeDisplay() {
-        const now = new Date();
-        
-        // Format time (12-hour format with AM/PM)
-        const timeOptions = {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        };
-        const timeString = now.toLocaleTimeString('en-US', timeOptions);
-        
-        // Format date
-        const dateOptions = {
-            weekday: 'long',
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-        };
-        const dateString = now.toLocaleDateString('en-US', dateOptions);
-        
-        // Update DOM elements
-        const timeElement = document.getElementById('currentTime');
-        const dateElement = document.getElementById('currentDate');
-        
-        if (timeElement) timeElement.textContent = timeString;
-        if (dateElement) dateElement.textContent = dateString;
-    }
+// Session management
+let sessionId = 'session-' + Date.now();
+let isLoading = false;
 
-    // Update time every second
-    setInterval(updateTimeDisplay, 1000);
-    updateTimeDisplay(); // Initial call
+// Time and Date functionality
+function updateTimeDisplay() {
+    const now = new Date();
+    
+    // Format time (12-hour format with AM/PM)
+    const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    };
+    const timeString = now.toLocaleTimeString('en-US', timeOptions);
+    
+    // Format date
+    const dateOptions = {
+        weekday: 'long',
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+    };
+    const dateString = now.toLocaleDateString('en-US', dateOptions);
+    
+    // Update DOM elements
+    const timeElement = document.getElementById('currentTime');
+    const dateElement = document.getElementById('currentDate');
+    
+    if (timeElement) timeElement.textContent = timeString;
+    if (dateElement) dateElement.textContent = dateString;
+}
 
-    // ============= FILE UPLOAD FUNCTIONS =============
-    function triggerFileUpload() {
-        document.getElementById('fileInput').click();
-    }
+// Update time every second
+setInterval(updateTimeDisplay, 1000);
+updateTimeDisplay(); // Initial call
 
-    function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-            uploadFile(file);
+// Load reminders from API
+async function loadReminders() {
+    try {
+        const response = await fetch('/api/reminders');
+        const data = await response.json();
+        
+        if (data.today_reminders) {
+            displayReminders(data.today_reminders);
         }
+    } catch (error) {
+        console.error('Error loading reminders:', error);
     }
+}
 
-    function uploadFile(file) {
-        if (isLoading) return;
-
-        // Validate file size (10MB limit)
-        if (file.size > 10 * 1024 * 1024) {
-            showError('File too large. Maximum size is 10MB.');
-            return;
+// Display reminders in sidebar
+function displayReminders(reminders) {
+    const reminderList = document.getElementById('reminderList');
+    const noReminders = reminderList.querySelector('.no-reminders');
+    
+    // Clear existing reminders (except no-reminders message)
+    const existingReminders = reminderList.querySelectorAll('.reminder-item');
+    existingReminders.forEach(item => item.remove());
+    
+    if (reminders.length === 0) {
+        if (noReminders) {
+            noReminders.style.display = 'block';
         }
-
-        isLoading = true;
-        const chatContainer = document.querySelector('.chat-container');
-
-        // Show upload progress
-        const progressDiv = document.createElement('div');
-        progressDiv.className = 'upload-progress';
-        progressDiv.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-file-upload" style="color: #4accd1;"></i>
-                <span>Uploading ${file.name}...</span>
-            </div>
-            <div class="upload-progress-bar">
-                <div class="upload-progress-fill" style="width: 0%"></div>
-            </div>
-        `;
-        chatContainer.appendChild(progressDiv);
-
-        // Animate progress bar
-        const progressFill = progressDiv.querySelector('.upload-progress-fill');
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-            progress += Math.random() * 10;
-            if (progress > 90) progress = 90;
-            progressFill.style.width = progress + '%';
-        }, 100);
-
-        // Scroll to bottom
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-
-        // Create form data
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('sessionId', sessionId);
-
-        // Upload file
-        fetch('/api/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Complete progress bar
-            clearInterval(progressInterval);
-            progressFill.style.width = '100%';
-            
-            setTimeout(() => {
-                progressDiv.remove();
-                
-                if (data.success) {
-                    // Add to uploaded files list
-                    uploadedFiles.push(data.file);
-                    updateFilesList();
-                    
-                    // Show success message in chat
-                    showFileUploadSuccess(data);
-                    
-                    console.log('📁 File uploaded successfully:', data);
-                } else {
-                    throw new Error(data.error || 'Upload failed');
-                }
-            }, 500);
-        })
-        .catch(error => {
-            clearInterval(progressInterval);
-            progressDiv.remove();
-            showError(`Upload failed: ${error.message}`);
-            console.error('Upload error:', error);
-        })
-        .finally(() => {
-            isLoading = false;
-            // Reset file input
-            document.getElementById('fileInput').value = '';
-        });
+        return;
     }
-
-    function showFileUploadSuccess(data) {
-        const chatContainer = document.querySelector('.chat-container');
-        
-        // Create success message
-        const messageContainer = document.createElement('div');
-        messageContainer.className = 'message-container';
-        
-        const additionalContent = document.createElement('div');
-        additionalContent.className = 'additional-content';
-        
-        const botAvatar = document.createElement('div');
-        botAvatar.style.cssText = `
-            width: 34px; height: 34px; border-radius: 6px; 
-            background: #238588; color: #ffffff;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; margin-right: 12px; font-size: 16px;
-        `;
-        botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
-        additionalContent.appendChild(botAvatar);
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message';
-        messageDiv.innerHTML = `
-            <strong>remindME:</strong><br>
-            <div class="file-upload-message">
-                <div class="file-upload-success">
-                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                    File uploaded successfully!
-                </div>
-                <div class="file-upload-info">
-                    <strong>${data.file.originalName}</strong>
-                </div>
-                <div class="file-upload-info">
-                    Size: ${formatFileSize(data.file.fileSize)} • 
-                    Type: ${data.file.fileType.toUpperCase()} • 
-                    Uploaded: ${new Date(data.file.uploadedAt).toLocaleTimeString()}
-                </div>
-                ${data.analysis && data.analysis.summary ? `
-                    <div class="file-upload-summary">
-                        <strong>Summary:</strong> ${data.analysis.summary}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        
-        messageContainer.appendChild(additionalContent);
-        messageContainer.appendChild(messageDiv);
-        chatContainer.appendChild(messageContainer);
-        
-        // Show message
-        setTimeout(() => {
-            messageContainer.classList.add('visible');
-        }, 100);
-        
-        // Scroll to bottom
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    // Hide no-reminders message
+    if (noReminders) {
+        noReminders.style.display = 'none';
     }
-
-    function updateFilesList() {
-        const filesList = document.getElementById('filesList');
-        
-        if (uploadedFiles.length === 0) {
-            filesList.innerHTML = `
-                <div style="text-align: center; color: #8a8a88; font-size: 12px; padding: 16px;">
-                    No files uploaded yet
-                </div>
-            `;
-            return;
-        }
-        
-        filesList.innerHTML = uploadedFiles.map(file => `
-            <div class="file-item">
-                <div class="file-name">${file.originalName}</div>
-                <div class="file-info">
-                    <span class="file-status ${file.processingStatus}">${file.processingStatus}</span>
-                    <span>${formatFileSize(file.fileSize)}</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-
-    // ============= DRAG AND DROP =============
-    function initializeDragAndDrop() {
-        const dragOverlay = document.getElementById('dragOverlay');
-        let dragCounter = 0;
-
-        document.addEventListener('dragenter', function(e) {
-            e.preventDefault();
-            dragCounter++;
-            dragOverlay.classList.add('active');
-        });
-
-        document.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            dragCounter--;
-            if (dragCounter === 0) {
-                dragOverlay.classList.remove('active');
-            }
-        });
-
-        document.addEventListener('dragover', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dragCounter = 0;
-            dragOverlay.classList.remove('active');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                uploadFile(files[0]);
-            }
-        });
-    }
-
-    // Reminder functionality
-    function setReminder() {
-        // Simple prompt for now - you can enhance this with a modal later
-        const reminderText = prompt("Enter your reminder:");
-        const reminderTime = prompt("Enter time (e.g., 3:30 PM):");
-        
-        if (reminderText && reminderTime) {
-            addReminderToList(reminderTime, reminderText);
-        }
-    }
-
-    function addReminderToList(time, text) {
-        const reminderList = document.getElementById('reminderList');
-        const noReminders = reminderList.querySelector('.no-reminders');
-        
-        // Hide "no reminders" message if visible
-        if (noReminders && noReminders.style.display !== 'none') {
-            noReminders.style.display = 'none';
-        }
-        
-        // Create new reminder item
+    
+    // Add reminders
+    reminders.forEach(reminder => {
         const reminderItem = document.createElement('div');
         reminderItem.className = 'reminder-item';
         reminderItem.innerHTML = `
-            <div class="reminder-time">${time}</div>
-            <div class="reminder-text">${text}</div>
+            <div class="reminder-time">${reminder.time || 'All day'}</div>
+            <div class="reminder-text">${reminder.title}</div>
+            ${reminder.description ? `<div class="reminder-description" style="font-size: 12px; color: #8a8a88; margin-top: 4px;">${reminder.description}</div>` : ''}
         `;
         
         // Add before the no-reminders div
@@ -1537,458 +1158,606 @@
         } else {
             reminderList.appendChild(reminderItem);
         }
-    }
+    });
+}
 
-    function viewHistory() {
-        alert("Reminder history functionality coming soon!");
-        // You can implement a modal or navigate to a history page here
+// Show processing animation in sidebar
+function showReminderProcessingAnimation() {
+    const reminderList = document.getElementById('reminderList');
+    const noReminders = reminderList.querySelector('.no-reminders');
+    
+    // Create processing animation
+    const processingItem = document.createElement('div');
+    processingItem.className = 'reminder-item processing-reminder';
+    processingItem.id = 'processing-reminder';
+    processingItem.style.cssText = `
+        background: linear-gradient(90deg, #213031, #2a3a3b, #213031);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border: 1px dashed #4accd1;
+        opacity: 0.8;
+    `;
+    
+    processingItem.innerHTML = `
+        <div class="reminder-time">
+            <i class="fas fa-circle-notch fa-spin" style="color: #4accd1; margin-right: 4px;"></i>
+            Processing...
+        </div>
+        <div class="reminder-text">Creating your reminder...</div>
+    `;
+    
+    // Hide no-reminders if visible
+    if (noReminders && noReminders.style.display !== 'none') {
+        noReminders.style.display = 'none';
     }
+    
+    // Add animation at the top
+    if (noReminders) {
+        reminderList.insertBefore(processingItem, noReminders);
+    } else {
+        reminderList.appendChild(processingItem);
+    }
+}
 
-    function formatBotResponse(text) {
-        // Escape HTML to prevent injection
-        let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Remove processing animation
+function removeReminderProcessingAnimation() {
+    const processingItem = document.getElementById('processing-reminder');
+    if (processingItem) {
+        processingItem.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => {
+            if (processingItem.parentNode) {
+                processingItem.parentNode.removeChild(processingItem);
+            }
+        }, 300);
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background-color: ${type === 'success' ? '#4accd1' : type === 'error' ? '#ff6b6b' : '#c96342'};
+        color: white;
+        border-radius: 8px;
+        z-index: 1000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        max-width: 300px;
+        word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Complete formatBotResponse function
+function formatBotResponse(text) {
+    // Escape HTML to prevent injection
+    let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Step 1: Handle bold headings with ** ** - must be at start of line or after whitespace
+    formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
+    
+    // Step 2: Handle headers with ## and ### - must be at start of line
+    formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
+    formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
+    
+    // Step 3: Handle bullet points - convert * items to proper list format
+    let lines = formatted.split('\n');
+    let inList = false;
+    let processedLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
         
-        // Step 1: Handle bold headings with ** ** - must be at start of line or after whitespace
-        formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
-        
-        // Step 2: Handle headers with ## and ### - must be at start of line
-        formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
-        formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
-        
-        // Step 3: Handle bullet points - convert * items to proper list format
-        let lines = formatted.split('\n');
-        let inList = false;
-        let processedLines = [];
-        
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i].trim();
-            
-            // Check if line starts with * followed by space (bullet point)
-            if (/^\*\s+/.test(line)) {
-                if (!inList) {
-                    processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3; list-style-type: disc;">');
-                    inList = true;
-                }
-                // Add list item - remove the * and space
-                let listContent = line.substring(2).trim();
-                // Handle bold text within list items only
-                listContent = listContent.replace(/\*\*([^*]+?)\*\*/g, '<strong style="color: #4accd1;">$1</strong>');
-                processedLines.push(`<li style="margin: 8px 0; line-height: 1.6; display: list-item;">${listContent}</li>`);
+        // Check if line starts with * followed by space (bullet point)
+        if (/^\*\s+/.test(line)) {
+            if (!inList) {
+                processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3; list-style-type: disc;">');
+                inList = true;
+            }
+            // Add list item - remove the * and space
+            let listContent = line.substring(2).trim();
+            // Handle bold text within list items only
+            listContent = listContent.replace(/\*\*([^*]+?)\*\*/g, '<strong style="color: #4accd1;">$1</strong>');
+            processedLines.push(`<li style="margin: 8px 0; line-height: 1.6; display: list-item;">${listContent}</li>`);
+        } else {
+            if (inList) {
+                processedLines.push('</ul>');
+                inList = false;
+            }
+            if (line.length > 0) {
+                processedLines.push(line);
             } else {
-                if (inList) {
-                    processedLines.push('</ul>');
-                    inList = false;
-                }
-                if (line.length > 0) {
-                    processedLines.push(line);
-                } else {
-                    processedLines.push(''); // Preserve empty lines
-                }
+                processedLines.push(''); // Preserve empty lines
             }
         }
-        
-        // Close any remaining list
-        if (inList) {
-            processedLines.push('</ul>');
-        }
-        
-        // Join with line breaks to preserve structure
-        formatted = processedLines.join('\n');
-        
-        // Step 4: Handle numbered lists - must be at start of line
-        formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
-        
-        // Step 5: Handle emphasis with single asterisks - but not part of ** or at word boundaries
-        formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
-        
-        // Step 6: Handle code blocks with backticks - single words or phrases
-        formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
-        
-        // Step 7: Handle special sections (bracketed content) - only complete brackets
-        formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
-        
-        // Step 8: Handle quotations - lines starting with >
-        formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
-        
-        // Step 9: Handle line breaks properly - minimal BR usage
-        formatted = formatted.replace(/\n\s*\n/g, '<br><br>'); // Only double newlines become breaks
-        formatted = formatted.replace(/(<\/ul>)\n/g, '$1'); // Remove breaks after lists
-        formatted = formatted.replace(/\n(<ul)/g, '$1'); // Remove breaks before lists
-        
-        // Step 10: Clean up any extra spaces but preserve list structure
-        formatted = formatted.replace(/\s*<br>\s*/g, '<br>'); // Clean up breaks
-        
-        return formatted.trim();
     }
+    
+    // Close any remaining list
+    if (inList) {
+        processedLines.push('</ul>');
+    }
+    
+    // Join with line breaks to preserve structure
+    formatted = processedLines.join('\n');
+    
+    // Continue with rest of formatting...
+    formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
+    formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
+    formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
+    formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
+    formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
+    formatted = formatted.replace(/\n\s*\n/g, '<br><br>');
+    formatted = formatted.replace(/(<\/ul>)\n/g, '$1');
+    formatted = formatted.replace(/\n(<ul)/g, '$1');
+    formatted = formatted.replace(/\s*<br>\s*/g, '<br>');
+    
+    return formatted.trim();
+}
 
-    function sendMessage() {
-        var messageInput = document.getElementById('messageInput');
-        var messageText = messageInput.textContent.trim();
+// Enhanced message sending with dual API processing
+function sendMessage() {
+    var messageInput = document.getElementById('messageInput');
+    var messageText = messageInput.textContent.trim();
+    
+    if (messageText !== '' && !isLoading) {
+        isLoading = true;
+        var chatContainer = document.querySelector('.chat-container');
+
+        console.log('User message:', messageText);
+
+        // Create user message
+        var message = `<strong>You:</strong><br>${messageText.replace(/\n/g, "<br>")}`;
+
+        // Create a container div for the message
+        var messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container');
+
+        // Create a div for the additional content (user avatar)
+        var additionalContent = document.createElement('div');
+        additionalContent.classList.add('additional-content');
+
+        // Create the user avatar
+        var userAvatar = document.createElement('div');
+        userAvatar.style.cssText = `
+            width: 34px; height: 34px; border-radius: 6px; 
+            background: #3a3a38; color: #e8e8e3; 
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; margin-right: 0px; font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        `;
+        userAvatar.textContent = 'You';
+        additionalContent.appendChild(userAvatar);
         
-        if (messageText !== '' && !isLoading) {
-            isLoading = true;
-            var chatContainer = document.querySelector('.chat-container');
+        // Create the message div
+        var newMessageDiv = document.createElement('div');
+        newMessageDiv.classList.add('message');
+        newMessageDiv.innerHTML = message;
 
-            // Log the message text to the console
-            console.log(messageText);
+        // Append elements
+        messageContainer.appendChild(additionalContent);
+        messageContainer.appendChild(newMessageDiv);
+        chatContainer.appendChild(messageContainer);
 
-            // Create user message
-            var message = `<strong>You:</strong><br>${messageText.replace(/\n/g, "<br>")}`;
+        // Show message
+        setTimeout(function() {
+            messageContainer.style.opacity = 1;
+        }, 100);
 
-            // Create a container div for the message
-            var messageContainer = document.createElement('div');
-            messageContainer.classList.add('message-container');
+        // Clear input
+        messageInput.textContent = '';
 
-            // Create a div for the additional content (user avatar)
-            var additionalContent = document.createElement('div');
-            additionalContent.classList.add('additional-content');
+        // Show loading indicator
+        var loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('loading');
+        loadingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 8px; color: #c96342;"></i>Analyzing with AI...';
+        chatContainer.appendChild(loadingDiv);
+        loadingDiv.style.display = 'block';
 
-            // Create the logo image (use a default user icon if image not found)
-            var logoImg = document.createElement('img');
-            logoImg.src = 'Screenshot_2022-01-18-16-24-07-73.jpg';
-            logoImg.classList.add('logo');
-            logoImg.onerror = function() {
-                // If image fails to load, create a text avatar
-                var avatar = document.createElement('div');
-                avatar.style.cssText = `
-                    width: 34px; height: 34px; border-radius: 6px; 
-                    background: #3a3a38; color: #e8e8e3; 
-                    display: flex; align-items: center; justify-content: center;
-                    font-weight: 600; margin-right: 12px; font-size: 14px;
-                    font-family: 'Inter', sans-serif;
-                `;
-                avatar.textContent = 'U';
-                additionalContent.replaceChild(avatar, logoImg);
-            };
+        // Scroll to bottom
+        chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            additionalContent.appendChild(logoImg);
+        // Send to enhanced API
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: messageText,
+                session_id: sessionId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove loading indicator
+            loadingDiv.remove();
             
-            // Create the message div
-            var newMessageDiv = document.createElement('div');
-            newMessageDiv.classList.add('message');
-            newMessageDiv.innerHTML = message;
+            if (data.error) {
+                throw new Error(data.error);
+            }
 
-            // Append elements
-            messageContainer.appendChild(additionalContent);
-            messageContainer.appendChild(newMessageDiv);
-            chatContainer.appendChild(messageContainer);
+            console.log('API Response:', data);
 
-            // Show message
+            // Create bot response with formatting
+            var formattedResponse = formatBotResponse(data.message || data.response);
+            var botMessage = `<strong>remindME:</strong><br>${formattedResponse}`;
+            
+            // Check if trigger was activated
+            if (data.trigger) {
+                console.log('Trigger activated - processing reminder...');
+                
+                // Show processing animation in sidebar
+                showReminderProcessingAnimation();
+                
+                // Show trigger indicator in chat
+                botMessage += '<br><div class="status-indicator trigger" style="background-color: #c96342; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 8px 0; display: inline-block;"><i class="fas fa-cogs fa-spin"></i> Processing reminder...</div>';
+            }
+            
+            var botMessageContainer = document.createElement('div');
+            botMessageContainer.classList.add('message-container');
+
+            var botAdditionalContent = document.createElement('div');
+            botAdditionalContent.classList.add('additional-content');
+
+            // Bot avatar
+            var botAvatar = document.createElement('div');
+            botAvatar.style.cssText = `
+                width: 34px; height: 34px; border-radius: 6px; 
+                background: #238588; color: #ffffff;
+                display: flex; align-items: center; justify-content: center;
+                font-weight: bold; margin-right: 0px; font-size: 16px;
+            `;
+            botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+            botAdditionalContent.appendChild(botAvatar);
+
+            var botMessageDiv = document.createElement('div');
+            botMessageDiv.classList.add('message');
+            botMessageDiv.innerHTML = botMessage;
+
+            botMessageContainer.appendChild(botAdditionalContent);
+            botMessageContainer.appendChild(botMessageDiv);
+            chatContainer.appendChild(botMessageContainer);
+
+            // Show bot message
             setTimeout(function() {
-                messageContainer.classList.add('visible');
+                botMessageContainer.style.opacity = 1;
             }, 100);
 
-            // Clear input
-            messageInput.textContent = '';
-
-            // Show loading indicator
-            var loadingDiv = document.createElement('div');
-            loadingDiv.classList.add('loading');
-            loadingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 8px; color: #c96342;"></i>remindME is thinking...';
-            chatContainer.appendChild(loadingDiv);
-            loadingDiv.style.display = 'block';
+            // Handle reminder creation
+            if (data.reminder_created) {
+                console.log('Reminder created:', data.reminder_created);
+                
+                // Remove processing animation
+                setTimeout(() => {
+                    removeReminderProcessingAnimation();
+                    
+                    // Update sidebar with new reminders
+                    loadReminders();
+                    
+                    // Show success notification
+                    showNotification(`Reminder created: ${data.reminder_created.title}`, 'success');
+                    
+                    // Update the status indicator in chat
+                    const statusIndicator = botMessageDiv.querySelector('.status-indicator.trigger');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = '<i class="fas fa-check"></i> Reminder created successfully!';
+                        statusIndicator.style.backgroundColor = '#4accd1';
+                    }
+                    
+                }, 1000); // Small delay to show the animation
+                
+            } else if (data.trigger) {
+                // If trigger was true but no reminder was created (processing failed)
+                setTimeout(() => {
+                    removeReminderProcessingAnimation();
+                    showNotification('Could not create reminder, please try again', 'error');
+                }, 2000);
+            }
 
             // Scroll to bottom
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        })
+        .catch(error => {
+            // Remove loading indicator
+            loadingDiv.remove();
+            
+            // Remove processing animation if it exists
+            removeReminderProcessingAnimation();
+            
+            // Show error message
+            var errorDiv = document.createElement('div');
+            errorDiv.classList.add('error-message');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+            chatContainer.appendChild(errorDiv);
+            
+            console.error('Error:', error);
+            showNotification('Error processing message', 'error');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        })
+        .finally(() => {
+            isLoading = false;
+        });
+    }
+}
 
-            // Send to API
-            fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: messageText,
-                    sessionId: sessionId
-                })
+// Enhanced reminder creation from sidebar
+function setReminder() {
+    const reminderText = prompt("Enter your reminder:");
+    const reminderTime = prompt("Enter time (e.g., 3:30 PM):");
+    const reminderDate = prompt("Enter date (YYYY-MM-DD) or leave empty for today:");
+    
+    if (reminderText && reminderTime) {
+        const today = new Date().toISOString().split('T')[0];
+        const finalDate = reminderDate || today;
+        
+        createReminderAPI(reminderText, reminderTime, finalDate);
+    }
+}
+
+// Create reminder via API
+async function createReminderAPI(title, time, date, description = '') {
+    try {
+        showReminderProcessingAnimation();
+        
+        const response = await fetch('/api/reminders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                time: time,
+                date: date,
+                description: description
             })
-            .then(response => response.json())
-            .then(data => {
-                // Remove loading indicator
-                loadingDiv.remove();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Create bot response with formatting
-                var formattedResponse = formatBotResponse(data.response);
-                var botMessage = `<strong>remindME:</strong><br>${formattedResponse}`;
-                
-                var botMessageContainer = document.createElement('div');
-                botMessageContainer.classList.add('message-container');
-
-                var botAdditionalContent = document.createElement('div');
-                botAdditionalContent.classList.add('additional-content');
-
-                // Bot avatar
-                var botAvatar = document.createElement('div');
-                botAvatar.style.cssText = `
-                    width: 34px; height: 34px; border-radius: 6px; 
-                    background: #238588; color: #ffffff;
-                    display: flex; align-items: center; justify-content: center;
-                    font-weight: bold; margin-right: 12px; font-size: 16px;
-                `;
-                botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
-                botAdditionalContent.appendChild(botAvatar);
-
-                var botMessageDiv = document.createElement('div');
-                botMessageDiv.classList.add('message');
-                botMessageDiv.innerHTML = botMessage;
-
-                botMessageContainer.appendChild(botAdditionalContent);
-                botMessageContainer.appendChild(botMessageDiv);
-                chatContainer.appendChild(botMessageContainer);
-
-                // Show bot message
-                setTimeout(function() {
-                    botMessageContainer.classList.add('visible');
-                }, 100);
-
-                // Scroll to bottom
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            })
-            .catch(error => {
-                // Remove loading indicator
-                loadingDiv.remove();
-                
-                // Show error message
-                var errorDiv = document.createElement('div');
-                errorDiv.classList.add('error-message');
-                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
-                chatContainer.appendChild(errorDiv);
-                
-                console.error('Error:', error);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            })
-            .finally(() => {
-                isLoading = false;
-            });
+        });
+        
+        const data = await response.json();
+        if (data.reminder) {
+            setTimeout(() => {
+                removeReminderProcessingAnimation();
+                loadReminders();
+                showNotification('Reminder created successfully!', 'success');
+            }, 1000);
         }
+    } catch (error) {
+        console.error('Error creating reminder:', error);
+        removeReminderProcessingAnimation();
+        showNotification('Error creating reminder', 'error');
     }
+}
 
-    function showError(message) {
-        const chatContainer = document.querySelector('.chat-container');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-        chatContainer.appendChild(errorDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+// View history function (placeholder for future enhancement)
+async function viewHistory() {
+    showNotification('History feature coming soon!', 'info');
+}
+
+// Navigation and UI functions
+function checkZoomLevel() {
+    var zoomLevel = Math.round(window.devicePixelRatio * 100);
+    var sidebar = document.getElementById('sidebar');
+    var screenWidth = window.innerWidth;
+    var mobileDiv = document.getElementById('mobileDiv');
+
+    if (zoomLevel > 400 || screenWidth <= 700) {
+        sidebar.classList.add('hide');
+        sidebar.classList.remove('collapsed');
+        mobileDiv.style.display = 'block';
+    } else if (zoomLevel > 300 || screenWidth <= 900) {
+        sidebar.classList.add('collapsed');
+        mobileDiv.style.display = 'none';
+    } else {
+        sidebar.classList.remove('collapsed');
+        sidebar.classList.remove('hide');
+        sidebar.style.display = 'block';
+        mobileDiv.style.display = 'none';
     }
+}
 
-    function checkZoomLevel() {
-        var zoomLevel = Math.round(window.devicePixelRatio * 100);
-        var sidebar = document.getElementById('sidebar');
-        var screenWidth = window.innerWidth;
-        var mobileDiv = document.getElementById('mobileDiv');
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+}
 
-        if (zoomLevel > 400 || screenWidth <= 700) {
-            sidebar.classList.add('hide');
-            sidebar.classList.remove('collapsed');
-            mobileDiv.style.display = 'block';
-        } else if (zoomLevel > 300 || screenWidth <= 900) {
-            sidebar.classList.add('collapsed');
-            mobileDiv.style.display = 'none';
-        } else {
-            sidebar.classList.remove('collapsed');
-            sidebar.classList.remove('hide');
-            sidebar.style.display = 'block';
-            mobileDiv.style.display = 'none';
-        }
+function startNewChat() {
+    sessionId = 'session-' + Date.now();
+    var chatContainer = document.querySelector('.chat-container');
+    if (chatContainer) {
+        // Clear chat messages but keep the welcome message
+        var messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
+        messageContainers.forEach(function(container) {
+            container.remove();
+        });
     }
+    
+    fetch('/api/new-chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            session_id: sessionId
+        })
+    })
+    .catch(error => {
+        console.error('Error starting new chat:', error);
+    });
+}
 
-    window.addEventListener('resize', checkZoomLevel);
-    window.addEventListener('load', checkZoomLevel);
-
-    function toggleSidebar() {
-        var sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
+// Hash change handler for navigation
+window.addEventListener('hashchange', () => {
+    const content = document.getElementById('content');
+    const hash = window.location.hash.slice(1);
+    
+    switch(hash) {
+        case 'chatBot':
+            content.innerHTML = `
+                <div class="header">
+                    <div class="header-left">remindME</div>
+                    <div class="header-right">
+                        <button class="share-button" onclick="startNewChat()">
+                            <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <div class="message-container" id="messageContainer"></div>
+                </div>
+                <div class="div-typing-box-container">
+                    <div class="typing-box-container">
+                        <div class="flex-Typing-Box">
+                            <div class="input-box">
+                                <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
+                                <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+                            </div>
+                            <div class="div-picture-Button">
+                                <button class="picture-Button">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="div-instructions">
+                            <p><span class="instructions">remindME can make mistakes. Check important info.</span></p>
+                        </div>
+                    </div>
+                </div>`;
+            break;
+        case 'explore':
+            content.innerHTML = `
+                <div class="header">
+                    <div class="header-left">Projects</div>
+                    <div class="header-right">
+                        <button class="share-button"><i class="fas fa-briefcase"></i></button>
+                    </div>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                        <div class="welcome-greeting">
+                            <span class="icon">🚀</span>Projects
+                        </div>
+                        <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Organize your work and collaborate with others</p>
+                    </div>
+                </div>`;
+            break;
+        case 'imageGenerator':
+            content.innerHTML = `
+                <div class="header">
+                    <div class="header-left">Artifacts</div>
+                    <div class="header-right">
+                        <button class="share-button"><i class="fas fa-cube"></i></button>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                        <div class="welcome-greeting">
+                            <span class="icon">🎨</span>Artifacts
+                        </div>
+                        <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Create and edit documents, code, and more</p>
+                    </div>
+                </div>`;
+            break;
+        case 'library':
+            content.innerHTML = `
+                <div class="header">
+                    <div class="header-left">Library</div>
+                    <div class="header-right">
+                        <button class="share-button"><i class="fas fa-bookmark"></i></button>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                        <div class="welcome-greeting">
+                            <span class="icon">📚</span>Your Library
+                        </div>
+                        <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Your saved chats and bookmarks</p>
+                    </div>
+                </div>`;
+            break;
+        default:
+            content.innerHTML = `
+                <div class="header">
+                    <div class="header-left">remindME</div>
+                    <div class="header-right">
+                        <button class="share-button" onclick="startNewChat()">
+                            <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
+                        <div class="welcome-greeting">
+                            <span class="icon">✨</span>Hello there!
+                        </div>
+                        <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6; margin-bottom: 40px;">How can I help you today?</p>
+                    </div>
+                </div>
+                <div class="div-typing-box-container">
+                    <div class="typing-box-container">
+                        <div class="flex-Typing-Box">
+                            <div class="input-box">
+                                <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
+                                <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+                            </div>
+                            <div class="div-picture-Button">
+                                <button class="picture-Button">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="div-instructions">
+                            <p><span class="instructions">remindME can make mistakes. Check important info.</span></p>
+                        </div>
+                    </div>
+                </div>`;
     }
+});
 
-    document.addEventListener('keydown', function(event) {
-        if (event.ctrlKey && event.key === '/') { 
-            event.preventDefault();
-            const messageInput = document.getElementById('messageInput');
+// Event listeners
+window.addEventListener('resize', checkZoomLevel);
+window.addEventListener('load', checkZoomLevel);
+
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key === '/') { 
+        event.preventDefault();
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
             messageInput.focus();
         }
-    });
-
-    // Hash-based routing
-    window.addEventListener('hashchange', () => {
-        const content = document.getElementById('content');
-        const hash = window.location.hash.slice(1);
-        
-        switch(hash) {
-            case 'chatBot':
-                content.innerHTML = `
-                    <div class="header">
-                        <div class="header-left">remindME</div>
-                        <div class="header-right">
-                            <button class="share-button" onclick="startNewChat()">
-                                <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
-                            </button>
-                        </div>
-                    </div>
-                    <div class="chat-container" id="chatContainer">
-                        <div class="message-container" id="messageContainer"></div>
-                    </div>
-                    <div class="div-typing-box-container">
-                        <div class="typing-box-container">
-                            <div class="flex-Typing-Box">
-                                <div class="input-box">
-                                    <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
-                                    <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
-                                </div>
-                                <div class="div-picture-Button">
-                                    <button class="picture-Button" onclick="triggerFileUpload()">
-                                        <i class="fas fa-paperclip"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="div-instructions">
-                                <p><span class="instructions">remindME can make mistakes. Check important info.</span></p>
-                            </div>
-                        </div>
-                    </div>`;
-                break;
-            case 'explore':
-                content.innerHTML = `
-                    <div class="header">
-                        <div class="header-left">Projects</div>
-                        <div class="header-right">
-                            <button class="share-button"><i class="fas fa-briefcase"></i></button>
-                        </div>
-                    </div>
-                    <div class="chat-container" id="chatContainer">
-                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
-                            <div class="welcome-greeting">
-                                <span class="icon">🚀</span>Projects
-                            </div>
-                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Organize your work and collaborate with others</p>
-                        </div>
-                    </div>`;
-                break;
-            case 'imageGenerator':
-                content.innerHTML = `
-                    <div class="header">
-                        <div class="header-left">Artifacts</div>
-                        <div class="header-right">
-                            <button class="share-button"><i class="fas fa-cube"></i></button>
-                        </div>
-                    </div>
-                    <div class="chat-container">
-                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
-                            <div class="welcome-greeting">
-                                <span class="icon">🎨</span>Artifacts
-                            </div>
-                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Create and edit documents, code, and more</p>
-                        </div>
-                    </div>`;
-                break;
-            case 'library':
-                content.innerHTML = `
-                    <div class="header">
-                        <div class="header-left">Library</div>
-                        <div class="header-right">
-                            <button class="share-button"><i class="fas fa-bookmark"></i></button>
-                        </div>
-                    </div>
-                    <div class="chat-container">
-                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
-                            <div class="welcome-greeting">
-                                <span class="icon">📚</span>Your Library
-                            </div>
-                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6;">Your saved chats and bookmarks</p>
-                        </div>
-                    </div>`;
-                break;
-            default:
-                content.innerHTML = `
-                    <div class="header">
-                        <div class="header-left">remindME</div>
-                        <div class="header-right">
-                            <button class="share-button" onclick="startNewChat()">
-                                <i class="fas fa-plus" style="margin-right: 6px;"></i>New chat
-                            </button>
-                        </div>
-                    </div>
-                    <div class="chat-container" id="chatContainer">
-                        <div style="text-align: center; margin-top: 120px; padding: 0 40px;">
-                            <div class="welcome-greeting">
-                                <span class="icon">✨</span>Hello there!
-                            </div>
-                            <p style="color: #b8b8b3; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6; margin-bottom: 40px;">
-                                I'm remindME, your AI assistant. Upload documents, ask questions, and I'll help you organize and remember everything.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="div-typing-box-container">
-                        <div class="typing-box-container">
-                            <div class="flex-Typing-Box">
-                                <div class="input-box">
-                                    <div class="message-Input" id="messageInput" contenteditable="true" data-placeholder="How can I help you today?" onkeydown="if(event.keyCode==13 && !event.shiftKey){sendMessage();return false;}"></div>
-                                    <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
-                                </div>
-                                <div class="div-picture-Button">
-                                    <button class="picture-Button" onclick="triggerFileUpload()">
-                                        <i class="fas fa-paperclip"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="div-instructions">
-                                <p><span class="instructions">remindME can make mistakes. Check important info.</span></p>
-                            </div>
-                        </div>
-                    </div>`;
-        }
-    });
-
-    function startNewChat() {
-        sessionId = 'session-' + Date.now();
-        uploadedFiles = [];
-        updateFilesList();
-        
-        var chatContainer = document.querySelector('.chat-container');
-        if (chatContainer) {
-            // Clear chat messages but keep the welcome message
-            var messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
-            messageContainers.forEach(function(container) {
-                container.remove();
-            });
-        }
-        
-        // Reset to welcome state
-        window.location.hash = '';
-        window.dispatchEvent(new Event('hashchange'));
     }
+});
 
-    // ============= INITIALIZATION =============
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeDragAndDrop();
-        
-        // Load existing files for current session
-        fetch(`/api/files/${sessionId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    uploadedFiles = data.files;
-                    updateFilesList();
-                }
-            })
-            .catch(error => console.error('Error loading files:', error));
-        
-        // Check for discovery button (if it exists)
-        var discoverButton = document.querySelector('.sidebar ul li:nth-child(2) a');
-        if (discoverButton) {
-            discoverButton.addEventListener('click', function(event) {
-                event.preventDefault();
-                window.location.href = 'AINews.html';
-            });
-        }
-    });
+// Load reminders when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadReminders();
+    
+    // Set up automatic reminder refresh every 5 minutes
+    setInterval(loadReminders, 5 * 60 * 1000);
+});
 
-    // Initial load
-    window.dispatchEvent(new Event('hashchange'));
+// Initial load
+if (!window.location.hash) {
+    window.location.hash = '#chatBot';
+}
+window.dispatchEvent(new Event('hashchange'));
 </script>
 </body>
 </html>
