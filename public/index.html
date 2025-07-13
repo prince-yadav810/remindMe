@@ -1523,7 +1523,7 @@ function formatBotResponse(text) {
 }
 
 // Enhanced message sending with dual API processing
-function sendMessage() {
+async function sendMessage() {
     var messageInput = document.getElementById('messageInput');
     var messageText = messageInput.textContent.trim();
     
@@ -1697,6 +1697,13 @@ function sendMessage() {
                         }
                     }, 1500);
                 }
+            }
+
+             if (data.reminder_created || data.trigger) {
+                console.log('🔄 Refreshing reminders...');
+                setTimeout(() => {
+                    loadReminders(); // This will refresh the sidebar
+                }, 1000);
             }
 
             // Scroll to bottom
@@ -2023,6 +2030,8 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+
 
 // Load reminders when page loads
 document.addEventListener('DOMContentLoaded', function() {

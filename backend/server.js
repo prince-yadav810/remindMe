@@ -1,4 +1,4 @@
-// ============= backend/server.js (EXACT PYTHON EQUIVALENT) =============
+// ============= FIXED SERVER.JS WITH DUAL API SYSTEM =============
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -23,67 +23,30 @@ const User = require('./models/user');
 // Import authentication routes
 const { router: authRouter, authenticateToken } = require('./routes/auth');
 
-require('dotenv').config();
-
-// ============= DUAL API CONFIGURATION (EXACTLY LIKE PYTHON) =============
-const CHAT_API_KEY = process.env.GEMINI_CHAT_API_KEY;
-const DATA_API_KEY = process.env.GEMINI_DATA_API_KEY;
-
-if (!CHAT_API_KEY || !DATA_API_KEY) {
-    console.error('❌ Both GEMINI_CHAT_API_KEY and GEMINI_DATA_API_KEY must be set in .env file');
-    process.exit(1);
-}
-
-console.log('🔑 Chat API Key loaded:', CHAT_API_KEY ? 'YES' : 'NO');
-console.log('🔑 Data API Key loaded:', DATA_API_KEY ? 'YES' : 'NO');
+// Load .env from parent directory
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configuration for free API usage (same as Python)
-const generationConfig = {
-    temperature: 0.7,
-    top_p: 0.95,
-    top_k: 40,
-    max_output_tokens: 1024,
-};
+// Use single API key (like your working app.py)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const safetySettings = [
-    {
-        category: "HARM_CATEGORY_HARASSMENT",
-        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        category: "HARM_CATEGORY_HATE_SPEECH", 
-        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-    }
-];
+if (!GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY must be set in .env file');
+    console.error('Get your API key from: https://makersuite.google.com/app/apikey');
+    process.exit(1);
+}
 
-// Initialize Chat Model (exactly like Python)
-const chatGenAI = new GoogleGenerativeAI(CHAT_API_KEY);
-const chatModel = chatGenAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    generationConfig,
-    safetySettings
-});
+console.log('🔑 API Key loaded:', GEMINI_API_KEY ? 'YES' : 'NO');
+console.log('🔑 API Key first 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'NOT SET');
 
-// Initialize Data Model (exactly like Python)
-const dataGenAI = new GoogleGenerativeAI(DATA_API_KEY);
-const dataModel = dataGenAI.getGenerativeModel({
-    model: 'gemini-1.5-flash', 
-    generationConfig,
-    safetySettings
-});
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-// ============= EXACT SAME PROMPTS AS PYTHON =============
+// ============= DUAL API PROMPTS (FROM APP.PY) =============
+
+// Chat API Prompt - Returns JSON with message and trigger
 const CHAT_ANALYSIS_PROMPT = `
 Analyze the user's message and respond in JSON format. You should:
 1. Provide a helpful response to the user
@@ -92,10 +55,10 @@ Analyze the user's message and respond in JSON format. You should:
 User message: "{message}"
 
 Respond ONLY in this JSON format:
-{{
+{
     "message": "Your helpful response to the user",
     "trigger": true/false
-}}
+}
 
 Set trigger to true if the user wants to:
 - Set a reminder
@@ -113,6 +76,7 @@ Examples:
 - "Hello, how are you?" → trigger: false
 `;
 
+// Enhanced Data API Prompt - Better date handling
 const DATA_EXTRACTION_PROMPT = `
 Extract reminder details from this message. Handle conflicting date information intelligently.
 
@@ -121,56 +85,42 @@ User message: "{message}"
 Instructions:
 - If multiple dates are mentioned, prioritize specific dates over relative dates
 - Extract the main task/action clearly
-- For dates: prefer specific dates like "July 13" over "today" if both are present
-- For times: extract any time mentioned
+- For dates: prefer specific dates like "July 15" over "today" if both are present
+- For times: extract any time mentioned (2pm, 14:00, etc.)
 - Always provide a title even if you need to infer it
 
 Respond ONLY in this JSON format:
-{{
+{
     "title": "Brief action to remember (required)",
-    "date": "specific date like 'july 13' or relative like 'today/tomorrow'",
+    "date": "specific date like 'july 15' or relative like 'today/tomorrow'",
     "time": "HH:MM in 24-hour format or null",
     "description": "Additional context if any"
-}}
+}
 
 Date priority rules:
-- Specific dates (July 13, Dec 25, 2024-07-13) take priority over relative dates
+- Specific dates (July 15, Dec 25, 2024-07-15) take priority over relative dates
 - If only relative dates (today, tomorrow), use those
 - If no date mentioned, default to "today"
 
 Examples:
-- "meeting today at 3 PM" → {{"title": "Meeting", "date": "today", "time": "15:00", "description": ""}}
-- "meeting today at 3 PM at 13 july" → {{"title": "Meeting", "date": "july 13", "time": "15:00", "description": ""}}
-- "call John at 2 PM on Monday" → {{"title": "Call John", "date": "monday", "time": "14:00", "description": ""}}
-- "submit report by Friday morning" → {{"title": "Submit report", "date": "friday", "time": "09:00", "description": "Deadline"}}
+- "meeting today at 3 PM" → {"title": "Meeting", "date": "today", "time": "15:00", "description": ""}
+- "meeting today at 3 PM on 15 july" → {"title": "Meeting", "date": "july 15", "time": "15:00", "description": ""}
+- "Zoom meeting with Prince at 2pm on 15 july" → {"title": "Zoom meeting with Prince", "date": "july 15", "time": "14:00", "description": ""}
+- "call John at 2 PM on Monday" → {"title": "Call John", "date": "monday", "time": "14:00", "description": ""}
 `;
 
-// ============= EXACT PYTHON UTILITY FUNCTIONS =============
-
-async function safeApiCall(model, prompt, maxRetries = 2) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            const response = await model.generateContent(prompt);
-            return response.response.text();
-        } catch (error) {
-            if (attempt === maxRetries - 1) {
-                throw error;
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-    }
-}
+// ============= UTILITY FUNCTIONS (FROM APP.PY) =============
 
 function parseJsonResponse(responseText) {
     try {
         let cleanText = responseText.trim();
         if (cleanText.startsWith('```json')) {
-            cleanText = cleanText.substring(7, cleanText.length - 3);
+            cleanText = cleanText.slice(7, -3);
         } else if (cleanText.startsWith('```')) {
-            cleanText = cleanText.substring(3, cleanText.length - 3);
+            cleanText = cleanText.slice(3, -3);
         }
         
-        // Remove any extra text before/after JSON
+        // Extract JSON from response
         const jsonMatch = cleanText.match(/\{.*\}/s);
         if (jsonMatch) {
             cleanText = jsonMatch[0];
@@ -178,19 +128,20 @@ function parseJsonResponse(responseText) {
         
         return JSON.parse(cleanText.trim());
     } catch (error) {
-        console.error(`JSON parsing error: ${error}, text: ${responseText.substring(0, 200)}`);
+        console.error('JSON parsing error:', error, 'text:', responseText.substring(0, 200));
         return null;
     }
 }
 
-function convertDateToIso(dateStr) {
+function convertDateToISO(dateStr) {
     const today = new Date();
     const currentYear = today.getFullYear();
     
-    if (!dateStr) {
+    // DEFAULT TO TODAY if no date provided
+    if (!dateStr || dateStr === '' || dateStr === 'null' || dateStr === 'undefined') {
+        console.log('🗓️  No date provided, defaulting to today');
         return today.toISOString().split('T')[0];
     }
-    
     dateStr = dateStr.toLowerCase().trim();
     
     if (dateStr === 'today' || dateStr === '') {
@@ -200,248 +151,184 @@ function convertDateToIso(dateStr) {
         tomorrow.setDate(today.getDate() + 1);
         return tomorrow.toISOString().split('T')[0];
     } else if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(dateStr)) {
-        // Handle day names
-        const days = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5, sunday: 6 };
+        const days = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
         const targetDay = days[dateStr];
-        const currentDay = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert Sunday=0 to Monday=0
+        const currentDay = today.getDay();
         let daysAhead = targetDay - currentDay;
-        if (daysAhead <= 0) {
-            daysAhead += 7;
-        }
+        if (daysAhead <= 0) daysAhead += 7;
+        
         const targetDate = new Date(today);
         targetDate.setDate(today.getDate() + daysAhead);
         return targetDate.toISOString().split('T')[0];
     } else {
-        try {
-            // Handle month day formats like "july 13", "dec 25", etc.
-            const monthDayMatch = dateStr.match(/(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})/);
+        // Handle "july 15", "december 25", etc.
+        const monthDayMatch = dateStr.match(/(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})/);
+        
+        if (monthDayMatch) {
+            const monthStr = monthDayMatch[1];
+            const day = parseInt(monthDayMatch[2]);
             
-            if (monthDayMatch) {
-                const monthStr = monthDayMatch[1];
-                const day = parseInt(monthDayMatch[2]);
-                
-                // Convert month name to number
-                const monthMap = {
-                    january: 1, jan: 1, february: 2, feb: 2, march: 3, mar: 3,
-                    april: 4, apr: 4, may: 5, june: 6, jun: 6,
-                    july: 7, jul: 7, august: 8, aug: 8, september: 9, sep: 9,
-                    october: 10, oct: 10, november: 11, nov: 11, december: 12, dec: 12
-                };
-                
-                const month = monthMap[monthStr] || today.getMonth() + 1;
-                
-                // Create the date - if the date has passed this year, assume next year
-                try {
-                    let targetDate = new Date(currentYear, month - 1, day);
-                    if (targetDate < today) {
-                        targetDate = new Date(currentYear + 1, month - 1, day);
-                    }
-                    return targetDate.toISOString().split('T')[0];
-                } catch (error) {
-                    console.log(`Invalid date: ${month}/${day}, defaulting to today`);
-                    return today.toISOString().split('T')[0];
+            const monthMap = {
+                january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2,
+                april: 3, apr: 3, may: 4, june: 5, jun: 5,
+                july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8,
+                october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11
+            };
+            
+            const month = monthMap[monthStr];
+            
+            try {
+                const targetDate = new Date(currentYear, month, day);
+                if (targetDate < today) {
+                    targetDate.setFullYear(currentYear + 1);
                 }
-            }
-            
-            // Try to parse as ISO date
-            if (dateStr.length === 10 && dateStr.includes('-')) {
-                const parsedDate = new Date(dateStr);
-                return parsedDate.toISOString().split('T')[0];
-            } else {
-                console.log(`Warning: Could not parse complex date '${dateStr}', defaulting to today`);
+                return targetDate.toISOString().split('T')[0];
+            } catch (error) {
+                console.error('Invalid date:', month, day);
                 return today.toISOString().split('T')[0];
             }
-        } catch (error) {
-            console.log(`Warning: Could not parse date '${dateStr}' (error: ${error}), defaulting to today`);
-            return today.toISOString().split('T')[0];
         }
+        
+        return today.toISOString().split('T')[0];
     }
 }
 
 function convertTimeTo24h(timeStr) {
-    if (!timeStr) {
-        return null;
-    }
+    if (!timeStr) return null;
     
     timeStr = timeStr.toLowerCase().trim();
     
     // Handle 12 AM/PM specifically
-    if (timeStr.includes('12 am') || timeStr.includes('12am')) {
-        return "00:00";  // 12 AM = midnight = 00:00
-    } else if (timeStr.includes('12 pm') || timeStr.includes('12pm')) {
-        return "12:00";  // 12 PM = noon = 12:00
+    if (timeStr.includes('12am') || timeStr.includes('12 am')) {
+        return "00:00";
+    } else if (timeStr.includes('12pm') || timeStr.includes('12 pm')) {
+        return "12:00";
     }
     
     // Handle other AM/PM cases
     const timeMatch = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/);
     if (timeMatch) {
         let hour = parseInt(timeMatch[1]);
-        const minute = parseInt(timeMatch[2]) || 0;
-        const isPm = timeMatch[3] === 'pm';
+        const minute = parseInt(timeMatch[2] || '0');
+        const isPM = timeMatch[3] === 'pm';
         
-        // Convert to 24-hour format
-        if (isPm && hour !== 12) {
+        if (isPM && hour !== 12) {
             hour += 12;
-        } else if (!isPm && hour === 12) {
+        } else if (!isPM && hour === 12) {
             hour = 0;
         }
         
         return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     }
     
-    // Handle 24-hour format or other formats
+    // Handle 24-hour format
     if (timeStr.includes(':')) {
         const parts = timeStr.split(':');
         try {
             const hour = parseInt(parts[0]);
-            const minute = parseInt(parts[1]) || 0;
+            const minute = parseInt(parts[1] || '0');
             if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
                 return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
             }
-        } catch (error) {
-            // Continue to default cases
+        } catch (e) {
+            // ignore
         }
     }
     
     // Default times for common words
-    if (timeStr.includes('morning')) {
-        return "09:00";
-    } else if (timeStr.includes('afternoon')) {
-        return "14:00";
-    } else if (timeStr.includes('evening')) {
-        return "18:00";
-    } else if (timeStr.includes('night')) {
-        return "20:00";
-    }
+    if (timeStr.includes('morning')) return "09:00";
+    if (timeStr.includes('afternoon')) return "14:00";
+    if (timeStr.includes('evening')) return "18:00";
+    if (timeStr.includes('night')) return "20:00";
     
     return null;
 }
 
-function createFallbackReminder(message) {
-    let title = "Reminder";
-    let date = "today";
-    let time = null;
+async function processReminderData(reminderData, userId, sessionId, originalMessage) {
+    console.log('🔍 Processing reminder data:', { reminderData, userId, sessionId });
     
-    // Simple patterns for fallback
-    if (message.toLowerCase().includes("tomorrow")) {
-        date = "tomorrow";
-    } else {
-        const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-        for (const day of days) {
-            if (message.toLowerCase().includes(day)) {
-                date = day;
-                break;
-            }
-        }
+    if (!reminderData || !reminderData.title) {
+        console.log('Invalid reminder data, creating fallback');
+        reminderData = {
+            title: originalMessage.substring(0, 50) + '...',
+            date: 'today',
+            time: null,
+            description: `Auto-extracted from: ${originalMessage}`
+        };
     }
     
-    // Try to extract time
-    time = convertTimeTo24h(message);
-    
-    // Try to extract action
-    const actionPatterns = [
-        /remind me (?:tomorrow )?(?:i have to |to )?(.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)/i,
-        /(?:need to|have to|must) (.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)/i,
-        /(?:submit|send|call|meet|visit|buy|do|check) (.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)/i,
-        /(.+?) (?:by|at) \d/i
-    ];
-    
-    for (const pattern of actionPatterns) {
-        const match = message.match(pattern);
-        if (match) {
-            title = match[1].trim().replace(/\s+/g, ' ');
-            break;
-        }
-    }
-    
-    // If still no good title, try to extract the main content
-    if (title === "Reminder") {
-        let cleaned = message.replace(/remind me (?:tomorrow )?(?:i have to |to )?/i, '');
-        cleaned = cleaned.replace(/\s+by\s+\d.*/i, '');
-        cleaned = cleaned.replace(/\s+at\s+\d.*/i, '');
-        if (cleaned.trim().length > 0) {
-            title = cleaned.trim();
-        }
-    }
-    
-    return {
-        title: title,
-        date: date,
-        time: time,
-        description: `Auto-extracted from: ${message.substring(0, 50)}...`
-    };
-}
-
-function validateAndFixReminderData(reminderData, originalMessage) {
-    if (!reminderData || typeof reminderData !== 'object') {
-        console.log("Invalid reminder data, creating fallback");
-        return createFallbackReminder(originalMessage);
-    }
-    
-    // Ensure we have a title
-    if (!reminderData.title) {
-        const fallback = createFallbackReminder(originalMessage);
-        reminderData.title = fallback.title;
-    }
-    
-    // Ensure we have a date
-    if (!reminderData.date) {
+    // Ensure date defaults to today if not provided
+    if (!reminderData.date || reminderData.date === '' || reminderData.date === 'null') {
         reminderData.date = 'today';
     }
     
-    // Clean up the title
-    let title = reminderData.title.trim();
-    if (title.length > 100) {
-        title = title.substring(0, 100) + "...";
+    // Convert date and time
+    const isoDate = convertDateToISO(reminderData.date);
+    const convertedTime = convertTimeTo24h(reminderData.time);
+    
+    console.log(`📅 Creating reminder: "${reminderData.title}" on ${isoDate} at ${convertedTime || 'no time'}`);
+    
+    // Create reminder time
+    let reminderTime;
+    if (convertedTime) {
+        reminderTime = new Date(`${isoDate}T${convertedTime}:00`);
+    } else {
+        reminderTime = new Date(`${isoDate}T09:00:00`);
     }
-    reminderData.title = title;
     
-    return reminderData;
-}
-
-async function processReminderData(reminderData, userId) {
-    if (!reminderData) {
-        return null;
+    // CRITICAL: Ensure userId is included and valid
+    if (!userId) {
+        throw new Error('UserId is required for reminder creation');
     }
     
-    console.log(`Processing reminder data: ${JSON.stringify(reminderData)}`);
+    console.log('👤 Creating reminder for userId:', userId);
     
-    // Convert date to ISO format
-    const originalDate = reminderData.date || 'today';
-    const isoDate = convertDateToIso(originalDate);
-    console.log(`Date conversion: '${originalDate}' -> '${isoDate}'`);
-    
-    // Convert time to 24-hour format
-    const originalTime = reminderData.time;
-    const convertedTime = convertTimeTo24h(originalTime);
-    console.log(`Time conversion: '${originalTime}' -> '${convertedTime}'`);
-    
-    const reminder = new Reminder({
-        userId: userId,
-        sessionId: `session-${userId}-${Date.now()}`,
-        title: reminderData.title || 'Reminder',
-        description: reminderData.description || '',
-        reminderTime: new Date(`${isoDate}T${convertedTime || '09:00'}:00`),
+    // Create reminder in database with explicit field validation
+    const reminderDoc = {
+        sessionId: sessionId,
+        userId: new mongoose.Types.ObjectId(userId), // Ensure proper ObjectId format
+        title: reminderData.title.trim(),
+        description: (reminderData.description || '').trim(),
+        reminderTime: reminderTime,
         isRecurring: false,
         status: 'pending',
-        priority: 'medium'
+        priority: 'medium',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+    
+    console.log('💾 Saving reminder document:', reminderDoc);
+    
+    const reminder = new Reminder(reminderDoc);
+    const savedReminder = await reminder.save();
+    
+    // VERIFICATION: Confirm the reminder was saved with userId
+    const verifyReminder = await Reminder.findById(savedReminder._id);
+    if (!verifyReminder || !verifyReminder.userId) {
+        throw new Error('Reminder was not saved properly with userId');
+    }
+    
+    console.log('✅ Reminder saved and verified with ID:', savedReminder._id, 'and userId:', savedReminder.userId);
+    
+    // Update user stats
+    await User.findByIdAndUpdate(userId, {
+        $inc: { 'stats.totalReminders': 1 },
+        $set: { 'stats.lastActiveAt': new Date() }
     });
     
-    await reminder.save();
-    console.log(`Reminder stored successfully: ${reminder.title}`);
-    
     return {
-        id: reminder._id,
-        title: reminder.title,
+        id: savedReminder._id,
+        title: savedReminder.title,
         date: isoDate,
         time: convertedTime,
-        description: reminder.description,
-        completed: false,
-        created_at: new Date().toISOString()
+        description: savedReminder.description,
+        reminderTime: savedReminder.reminderTime,
+        status: savedReminder.status,
+        verified: true // Flag to indicate successful verification
     };
 }
 
-// ============= MIDDLEWARE AND SETUP =============
+// ============= MIDDLEWARE SETUP =============
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -539,83 +426,130 @@ app.get('/', (req, res) => {
     }
 });
 
-// ============= DUAL API CHAT ENDPOINT (EXACTLY LIKE PYTHON) =============
+// ============= ENHANCED CHAT ENDPOINT WITH DUAL API =============
 app.post('/api/chat', authenticateToken, async (req, res) => {
     try {
         const { message } = req.body;
         const userId = req.user._id;
-        const sessionId = req.sessionId;
-        
+        const userSessionId = req.sessionId;
+
         if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
+            return res.status(400).json({ 
+                error: 'Message is required',
+                success: false 
+            });
         }
-        
-        console.log(`Processing message: ${message}`);
-        
-        // Step 1: Get response from Chat API (exactly like Python)
+
+        console.log('💬 Processing message:', message, 'for user:', userId);
+
+        // Step 1: Chat API - Get response and detect trigger
+        const model = genAI.getGenerativeModel({ 
+            model: 'gemini-1.5-flash',
+            generationConfig: {
+                maxOutputTokens: 500,
+                temperature: 0.7,
+            }
+        });
+
         const chatPrompt = CHAT_ANALYSIS_PROMPT.replace('{message}', message);
-        const chatResponse = await safeApiCall(chatModel, chatPrompt);
+        const chatResult = await model.generateContent(chatPrompt);
+        const chatResponse = chatResult.response.text();
+        
+        console.log('🤖 Chat API response:', chatResponse);
+        
         const chatData = parseJsonResponse(chatResponse);
         
         if (!chatData) {
             // Fallback if JSON parsing fails
+            const fallbackPrompt = `You are remindME, a helpful AI assistant for ${req.user.name}. User says: "${message}". Respond helpfully.`;
+            const fallbackResult = await model.generateContent(fallbackPrompt);
+            const fallbackResponse = fallbackResult.response.text();
+            
             return res.json({
-                message: 'I understand your message.',
+                response: fallbackResponse,
+                sessionId: userSessionId,
                 trigger: false,
-                session_id: sessionId
+                success: true
             });
         }
-        
+
         const responseData = {
-            message: chatData.message || 'I understand your message.',
+            response: chatData.message || 'I understand your message.',
             trigger: chatData.trigger || false,
-            session_id: sessionId
+            sessionId: userSessionId,
+            success: true,
+            reminder_created: null,
+            processing_status: 'completed'
         };
-        
-        // Step 2: If trigger is true, process with Data API (exactly like Python)
+
+        console.log('🎯 AI Response generated, trigger detected:', chatData.trigger);
+
+        // Step 2: If trigger is true, process with Data API
         if (chatData.trigger) {
-            console.log("Trigger detected, processing with Data API...");
+            console.log('🔄 Trigger detected, extracting reminder details...');
+            responseData.processing_status = 'processing_reminder';
             
             try {
-                // Extract reminder details using Data API
+                // Data API - Extract reminder details
                 const dataPrompt = DATA_EXTRACTION_PROMPT.replace('{message}', message);
-                const dataResponse = await safeApiCall(dataModel, dataPrompt);
-                let reminderData = parseJsonResponse(dataResponse);
+                const dataResult = await model.generateContent(dataPrompt);
+                const dataResponse = dataResult.response.text();
+                
+                console.log('📊 Data API response:', dataResponse);
+                
+                const reminderData = parseJsonResponse(dataResponse);
                 
                 if (reminderData) {
-                    // Validate and fix reminder data
-                    reminderData = validateAndFixReminderData(reminderData, message);
+                    // Process and store the reminder with retry logic
+                    let storedReminder = null;
+                    let attempts = 0;
+                    const maxAttempts = 3;
                     
-                    // Store the reminder
-                    const storedReminder = await processReminderData(reminderData, userId);
-                    if (storedReminder) {
-                        responseData.reminder_created = storedReminder;
-                        console.log(`Reminder created: ${storedReminder.title} on ${storedReminder.date}`);
-                        
-                        // Update user stats
-                        await User.findByIdAndUpdate(userId, {
-                            $inc: { 'stats.totalReminders': 1 },
-                            $set: { 'stats.lastActiveAt': new Date() }
-                        });
+                    while (!storedReminder && attempts < maxAttempts) {
+                        attempts++;
+                        try {
+                            console.log(`🔄 Attempt ${attempts} to create reminder...`);
+                            storedReminder = await processReminderData(reminderData, userId, userSessionId, message);
+                            
+                            if (storedReminder && storedReminder.verified) {
+                                responseData.reminder_created = storedReminder;
+                                responseData.processing_status = 'reminder_created';
+                                console.log(`✅ Reminder created successfully on attempt ${attempts}: ${storedReminder.title}`);
+                                break;
+                            }
+                        } catch (reminderError) {
+                            console.error(`❌ Reminder creation attempt ${attempts} failed:`, reminderError);
+                            if (attempts === maxAttempts) {
+                                console.error('❌ All reminder creation attempts failed');
+                                responseData.processing_status = 'reminder_failed';
+                                responseData.error = 'Failed to create reminder after multiple attempts';
+                            }
+                            // Wait before retry
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
                     }
+                } else {
+                    console.log('❌ Failed to parse reminder data from Data API');
+                    responseData.processing_status = 'parsing_failed';
                 }
                 
-            } catch (error) {
-                console.error(`Data API error: ${error}`);
-                // Continue without reminder creation
+            } catch (dataError) {
+                console.error('❌ Data API error:', dataError);
+                responseData.processing_status = 'data_api_failed';
+                responseData.error = 'Failed to extract reminder details';
             }
         }
-        
+
         // Save conversation to database
         try {
             let conversation = await Conversation.findOne({ 
-                sessionId: sessionId,
+                sessionId: userSessionId,
                 userId: userId 
             });
             
             if (!conversation) {
                 conversation = new Conversation({ 
-                    sessionId: sessionId, 
+                    sessionId: userSessionId, 
                     userId: userId,
                     messages: [] 
                 });
@@ -623,192 +557,485 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
             
             conversation.messages.push(
                 { role: 'user', content: message, timestamp: new Date() },
-                { role: 'assistant', content: responseData.message, timestamp: new Date() }
+                { role: 'assistant', content: responseData.response, timestamp: new Date() }
             );
             
             await conversation.save();
+
+            // Update user stats
+            await User.findByIdAndUpdate(userId, {
+                $inc: { 'stats.totalConversations': 1 },
+                $set: { 'stats.lastActiveAt': new Date() }
+            });
+
         } catch (dbError) {
             console.log('Database save failed:', dbError.message);
         }
-        
+
+        // Add delay to ensure database consistency before response
+        if (responseData.reminder_created) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
         return res.json(responseData);
-        
+
     } catch (error) {
-        console.error(`Chat error: ${error}`);
-        return res.status(500).json({ error: error.message });
+        console.error('❌ Chat error:', error.message);
+        res.status(500).json({ 
+            error: 'AI service is temporarily busy. Please try again.',
+            success: false
+        });
     }
 });
 
-// ============= EXACT SAME ENDPOINTS AS PYTHON =============
+// ============= REST OF THE ENDPOINTS (UNCHANGED) =============
 
-// Get reminders (exactly like Python)
+// File upload configuration
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid file type. Please upload PDF, DOCX, TXT, or image files.'), false);
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit
+    }
+});
+
+// Text extraction functions (unchanged)
+async function extractTextFromFile(filePath, mimeType) {
+    try {
+        let extractedText = '';
+        let metadata = {};
+
+        switch (mimeType) {
+            case 'application/pdf':
+                const pdfBuffer = fs.readFileSync(filePath);
+                const pdfData = await pdfParse(pdfBuffer);
+                extractedText = pdfData.text;
+                metadata = { pages: pdfData.numpages, wordCount: pdfData.text.split(/\s+/).length };
+                break;
+
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                const docxBuffer = fs.readFileSync(filePath);
+                const docxResult = await mammoth.extractRawText({ buffer: docxBuffer });
+                extractedText = docxResult.value;
+                metadata = { wordCount: extractedText.split(/\s+/).length };
+                break;
+
+            case 'text/plain':
+                extractedText = fs.readFileSync(filePath, 'utf8');
+                metadata = { wordCount: extractedText.split(/\s+/).length };
+                break;
+
+            case 'image/jpeg':
+            case 'image/png':
+            case 'image/gif':
+                extractedText = `[Image file: ${path.basename(filePath)}]`;
+                metadata = { type: 'image' };
+                break;
+
+            default:
+                extractedText = `[Unsupported file type: ${mimeType}]`;
+        }
+
+        return { extractedText, metadata };
+    } catch (error) {
+        console.error('Text extraction error:', error);
+        return { extractedText: `[Error extracting text: ${error.message}]`, metadata: {} };
+    }
+}
+
+async function processFileContent(extractedText, filename) {
+    try {
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+        const prompt = `Analyze this document and provide a JSON response:
+        
+        Document: ${filename}
+        Content: ${extractedText}
+        
+        Provide:
+        1. Brief summary (2-3 sentences)
+        2. Key topics
+        3. Important dates
+        4. Action items
+        5. People/organizations mentioned
+        6. Sentiment
+        
+        Respond in JSON format:
+        {
+          "summary": "Brief summary",
+          "keyTopics": ["topic1", "topic2"],
+          "importantDates": ["date1", "date2"],
+          "actionItems": ["action1", "action2"],
+          "entities": ["person1", "org1"],
+          "sentiment": "positive/negative/neutral"
+        }`;
+
+        const result = await model.generateContent(prompt);
+        const response = result.response.text();
+        
+        try {
+            return JSON.parse(response);
+        } catch (parseError) {
+            return {
+                summary: response.substring(0, 200) + '...',
+                keyTopics: [],
+                importantDates: [],
+                actionItems: [],
+                entities: [],
+                sentiment: 'neutral'
+            };
+        }
+    } catch (error) {
+        console.error('AI processing error:', error);
+        return {
+            summary: `Document uploaded: ${filename}`,
+            keyTopics: [],
+            importantDates: [],
+            actionItems: [],
+            entities: [],
+            sentiment: 'neutral'
+        };
+    }
+}
+
+// File upload
+app.post('/api/upload', authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded', success: false });
+        }
+
+        const userId = req.user._id;
+        const userSessionId = req.sessionId;
+
+        console.log('📁 File uploaded by user:', req.user.email, req.file.originalname);
+
+        const uploadedFile = new UploadedFile({
+            sessionId: userSessionId,
+            userId: userId,
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            fileType: path.extname(req.file.originalname).toLowerCase(),
+            fileSize: req.file.size,
+            filePath: req.file.path,
+            mimeType: req.file.mimetype,
+            processingStatus: 'processing'
+        });
+
+        await uploadedFile.save();
+
+        const { extractedText, metadata } = await extractTextFromFile(req.file.path, req.file.mimetype);
+        const aiAnalysis = await processFileContent(extractedText, req.file.originalname);
+
+        uploadedFile.extractedText = extractedText;
+        uploadedFile.metadata = metadata;
+        uploadedFile.processingStatus = 'completed';
+        uploadedFile.processedAt = new Date();
+        await uploadedFile.save();
+
+        const memory = new Memory({
+            sessionId: userSessionId,
+            userId: userId,
+            sourceType: 'file',
+            sourceId: uploadedFile._id.toString(),
+            title: req.file.originalname,
+            content: extractedText,
+            summary: aiAnalysis.summary,
+            tags: aiAnalysis.keyTopics,
+            aiProcessing: {
+                sentiment: aiAnalysis.sentiment,
+                actionItems: aiAnalysis.actionItems,
+                keyPhrases: aiAnalysis.keyTopics,
+                entities: aiAnalysis.entities
+            },
+            context: {
+                dateRelevant: aiAnalysis.importantDates.length > 0 ? new Date(aiAnalysis.importantDates[0]) : null,
+                people: aiAnalysis.entities.filter(e => e.includes(' '))
+            }
+        });
+
+        await memory.save();
+
+        res.json({
+            success: true,
+            file: {
+                id: uploadedFile._id,
+                originalName: req.file.originalname,
+                fileType: uploadedFile.fileType,
+                fileSize: uploadedFile.fileSize,
+                processingStatus: uploadedFile.processingStatus,
+                uploadedAt: uploadedFile.uploadedAt
+            },
+            analysis: aiAnalysis,
+            memory: { id: memory._id, summary: memory.summary, tags: memory.tags }
+        });
+
+    } catch (error) {
+        console.error('File upload error:', error);
+        res.status(500).json({ error: error.message || 'Failed to process file', success: false });
+    }
+});
+
+// Get reminders
 app.get('/api/reminders', authenticateToken, async (req, res) => {
     try {
         const userId = req.user._id;
-        const today = new Date();
-        const nextWeek = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+        console.log('📋 Fetching reminders for userId:', userId);
         
-        console.log(`Fetching reminders from ${today.toISOString().split('T')[0]} to ${nextWeek.toISOString().split('T')[0]}`);
-        
-        const allReminders = await Reminder.find({ 
-            userId: userId,
-            status: { $ne: 'completed' }
-        }).sort({ reminderTime: 1 });
-        
-        const todayReminders = [];
-        const upcomingReminders = [];
-        
-        console.log(`Total reminders in storage: ${allReminders.length}`);
-        
-        for (const reminder of allReminders) {
-            try {
-                const reminderDate = new Date(reminder.reminderTime);
-                const reminderDateOnly = reminderDate.toISOString().split('T')[0];
-                const todayOnly = today.toISOString().split('T')[0];
-                
-                console.log(`Checking reminder: ${reminder.title}, date: ${reminderDateOnly}`);
-                
-                const formattedReminder = {
-                    id: reminder._id,
-                    title: reminder.title,
-                    description: reminder.description,
-                    time: reminderDate.toTimeString().slice(0, 5),
-                    date: reminderDateOnly,
-                    completed: reminder.status === 'completed'
-                };
-                
-                // Add to today's reminders
-                if (reminderDateOnly === todayOnly) {
-                    todayReminders.push(formattedReminder);
-                    console.log(`Added to today's reminders: ${reminder.title}`);
-                }
-                
-                // Add to upcoming reminders (today + next 7 days)
-                if (reminderDate >= today && reminderDate <= nextWeek) {
-                    upcomingReminders.push(formattedReminder);
-                    console.log(`Added to upcoming reminders: ${reminder.title} on ${reminderDateOnly}`);
-                }
-                
-            } catch (error) {
-                console.error(`Error parsing reminder date: ${error}, reminder: ${reminder}`);
-                continue;
-            }
-        }
-        
-        console.log(`Found ${todayReminders.length} reminders for today`);
-        console.log(`Found ${upcomingReminders.length} upcoming reminders`);
-        
-        return res.json({
-            today_reminders: todayReminders,
-            upcoming_reminders: upcomingReminders,
-            all_reminders: allReminders.map(r => ({
-                id: r._id,
-                title: r.title,
-                description: r.description,
-                time: new Date(r.reminderTime).toTimeString().slice(0, 5),
-                date: new Date(r.reminderTime).toISOString().split('T')[0],
-                completed: r.status === 'completed'
-            }))
+        // Add cache-busting headers
+        res.set({
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
         });
         
+        const today = new Date();
+        const nextWeek = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+
+        // Get all reminders for this user with explicit userId query
+        const allReminders = await Reminder.find({ 
+            userId: new mongoose.Types.ObjectId(userId),
+            status: { $ne: 'completed' }
+        }).sort({ reminderTime: 1 }).lean(); // Use lean() for better performance
+
+        console.log(`📊 Found ${allReminders.length} reminders for user ${userId}`);
+        
+        // Debug: Log details of found reminders
+        if (allReminders.length > 0) {
+            allReminders.slice(0, 3).forEach((reminder, index) => {
+                console.log(`📝 Reminder ${index + 1}: "${reminder.title}" at ${reminder.reminderTime} (userId: ${reminder.userId})`);
+            });
+        } else {
+            console.log('ℹ️  No reminders found for this user');
+        }
+
+        const todayReminders = allReminders.filter(reminder => {
+            const reminderDate = new Date(reminder.reminderTime);
+            return reminderDate.toDateString() === today.toDateString();
+        });
+
+        const upcomingReminders = allReminders.filter(reminder => {
+            const reminderDate = new Date(reminder.reminderTime);
+            return reminderDate >= today && reminderDate <= nextWeek;
+        });
+
+        console.log(`📅 Today: ${todayReminders.length}, Upcoming: ${upcomingReminders.length}, Total: ${allReminders.length}`);
+
+        // Enhanced format function with better error handling
+        const formatReminder = (reminder) => {
+            try {
+                const reminderDate = new Date(reminder.reminderTime);
+                return {
+                    id: reminder._id,
+                    title: reminder.title || 'Untitled Reminder',
+                    description: reminder.description || '',
+                    time: reminderDate.toTimeString().slice(0, 5),
+                    date: reminderDate.toISOString().split('T')[0],
+                    completed: reminder.status === 'completed',
+                    reminderTime: reminder.reminderTime,
+                    status: reminder.status,
+                    priority: reminder.priority
+                };
+            } catch (error) {
+                console.error('Error formatting reminder:', error, reminder);
+                return {
+                    id: reminder._id,
+                    title: 'Error formatting reminder',
+                    description: '',
+                    time: '09:00',
+                    date: today.toISOString().split('T')[0],
+                    completed: false
+                };
+            }
+        };
+
+        const response = {
+            success: true,
+            today_reminders: todayReminders.map(formatReminder),
+            upcoming_reminders: upcomingReminders.map(formatReminder),
+            all_reminders: allReminders.map(formatReminder),
+            total_count: allReminders.length,
+            user_id: userId,
+            timestamp: new Date().toISOString()
+        };
+
+        console.log('📤 Sending reminders response:', {
+            today: response.today_reminders.length,
+            upcoming: response.upcoming_reminders.length,
+            total: response.total_count,
+            userId: userId
+        });
+
+        res.json(response);
+
     } catch (error) {
-        console.error(`Error in get_reminders: ${error}`);
-        return res.status(500).json({ error: error.message });
+        console.error('❌ Get reminders error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to fetch reminders',
+            error: error.message 
+        });
     }
 });
 
-// Create manual reminder (exactly like Python)
+// Create reminder manually
 app.post('/api/reminders', authenticateToken, async (req, res) => {
     try {
         const { title, time, date, description } = req.body;
         const userId = req.user._id;
-        
-        const reminderData = {
-            title: title || '',
-            date: date || new Date().toISOString().split('T')[0],
-            time: time,
-            description: description || ''
-        };
-        
-        const storedReminder = await processReminderData(reminderData, userId);
-        
-        return res.json({
-            message: 'Reminder created successfully',
-            reminder: storedReminder
+        const userSessionId = req.sessionId;
+
+        if (!title || !date) {
+            return res.status(400).json({ success: false, message: 'Title and date are required' });
+        }
+
+        const reminder = new Reminder({
+            sessionId: userSessionId,
+            userId: userId,
+            title: title,
+            description: description || '',
+            reminderTime: new Date(`${date}T${time || '09:00'}:00`),
+            isRecurring: false,
+            status: 'pending',
+            priority: 'medium'
         });
-        
+
+        await reminder.save();
+
+        res.json({
+            success: true,
+            reminder: {
+                id: reminder._id,
+                title: reminder.title,
+                time: time,
+                date: date,
+                description: reminder.description
+            }
+        });
+
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        console.error('Reminder creation error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create reminder' });
     }
 });
 
-// New chat endpoint (exactly like Python)
-app.post('/api/new-chat', authenticateToken, async (req, res) => {
+// Get conversation history
+app.get('/api/conversation', authenticateToken, async (req, res) => {
     try {
-        const { session_id } = req.body;
-        const sessionId = session_id || req.sessionId;
+        const userId = req.user._id;
+        const userSessionId = req.sessionId;
         
-        return res.json({
-            message: 'New chat session created',
-            session_id: sessionId
+        const conversation = await Conversation.findOne({ 
+            sessionId: userSessionId,
+            userId: userId 
         });
         
+        if (!conversation) {
+            return res.json({ 
+                messages: [],
+                sessionId: userSessionId,
+                success: true 
+            });
+        }
+
+        res.json({ 
+            messages: conversation.messages,
+            sessionId: userSessionId,
+            success: true,
+            messageCount: conversation.messages.length
+        });
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        console.error('Get conversation error:', error);
+        res.status(500).json({ error: 'Failed to fetch conversation', success: false });
     }
 });
 
-// Health check (exactly like Python)
+// Health check
 app.get('/api/health', async (req, res) => {
     try {
-        const totalReminders = await Reminder.countDocuments();
-        const sampleReminders = await Reminder.find().sort({ createdAt: -1 }).limit(3);
+        const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+        const geminiConfigured = !!GEMINI_API_KEY;
         
-        res.json({
-            status: 'healthy',
-            chat_model: 'gemini-1.5-flash',
-            data_model: 'gemini-1.5-flash',
-            total_reminders: totalReminders,
-            reminders_sample: sampleReminders.map(r => ({
-                title: r.title,
-                date: new Date(r.reminderTime).toISOString().split('T')[0],
-                time: new Date(r.reminderTime).toTimeString().slice(0, 5)
-            }))
+        const totalUsers = await User.countDocuments();
+        const totalConversations = await Conversation.countDocuments();
+        const totalFiles = await UploadedFile.countDocuments();
+        const totalMemories = await Memory.countDocuments();
+        const totalReminders = await Reminder.countDocuments();
+        
+        res.json({ 
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+            services: {
+                database: mongoStatus,
+                ai: geminiConfigured ? 'configured' : 'not configured',
+                authentication: 'active'
+            },
+            stats: {
+                totalUsers,
+                totalConversations,
+                totalFiles,
+                totalMemories,
+                totalReminders,
+                uptime: process.uptime()
+            },
+            version: '2.0.0 - Dual API',
+            environment: process.env.NODE_ENV || 'development'
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Health check error:', error);
+        res.status(500).json({ status: 'ERROR', timestamp: new Date().toISOString(), error: 'Health check failed' });
     }
 });
 
-// Debug reminders endpoint (exactly like Python)
-app.get('/api/debug/reminders', async (req, res) => {
-    try {
-        const allReminders = await Reminder.find();
-        return res.json({
-            all_reminders: allReminders,
-            total_count: allReminders.length,
-            current_date: new Date().toISOString().split('T')[0]
-        });
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
-});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ error: 'Something broke!' });
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'File too large. Maximum size is 10MB.', success: false });
+        }
+    }
+    res.status(500).json({ error: 'Something broke!', success: false });
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Starting remindME Server with Clean Dual API...`);
-    console.log(`Chat API Key loaded: ${CHAT_API_KEY ? '✓' : '✗'}`);
-    console.log(`Data API Key loaded: ${DATA_API_KEY ? '✓' : '✗'}`);
-    console.log(`Architecture: Chat API → JSON → Data API (if triggered)`);
+    console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Auth Page: http://localhost:${PORT}/auth`);
     console.log(`📱 Main App: http://localhost:${PORT}/app`);
     console.log(`🔌 API Health: http://localhost:${PORT}/api/health`);
+    console.log(`📁 Uploads directory: ${uploadsDir}`);
+    console.log('🤖 Using Dual API System: Chat API → Data API (if triggered)');
 });
 
 module.exports = app;
