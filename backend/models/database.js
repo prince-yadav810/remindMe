@@ -65,6 +65,7 @@ const reminderSchema = new mongoose.Schema({
   sessionId: { type: String, required: true, index: true },
   title: { type: String, required: true },
   description: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   reminderTime: { type: Date, required: true },
   isRecurring: { type: Boolean, default: false },
   recurrencePattern: {
