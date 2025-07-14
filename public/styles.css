@@ -1,0 +1,391 @@
+/* ============= ENHANCED SIDEBAR STYLES WITH ANIMATIONS ============= */
+
+/* Updated sidebar dimensions - 247px × 706px */
+.sidebar {
+    width: 247px;
+    min-width: 247px;
+    max-height: 706px;
+    background-color: #222121;
+    padding: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+    order: 2;
+    border-left: 1px solid #3a3a38;
+    box-sizing: border-box;
+    border-radius: 12px 0 0 12px;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    min-width: 68px;
+    width: 68px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.hide {
+    min-width: 0px;
+    width: 0px;
+    padding: 0px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced sidebar content with smooth transitions */
+.sidebar-content {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateX(0);
+}
+
+.sidebar-content.fade-out {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.sidebar-content.fade-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Enhanced sidebar header */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 24px;
+    width: 100%;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.sidebar-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Enhanced time display with subtle animations */
+.time-display {
+    background: linear-gradient(135deg, #213031 0%, #1a2828 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(74, 204, 209, 0.1);
+}
+
+.time-display:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(74, 204, 209, 0.1);
+    border-color: rgba(74, 204, 209, 0.2);
+}
+
+.current-time {
+    font-size: 28px;
+    font-weight: 600;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 8px;
+    transition: color 0.3s ease;
+}
+
+.current-date {
+    font-size: 14px;
+    color: #b8b8b3;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+/* Enhanced reminder section */
+.reminder-section {
+    flex: 1;
+    margin-bottom: 20px;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.reminder-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e8e8e3;
+    margin-bottom: 16px;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.3s ease;
+}
+
+.reminder-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Enhanced reminder items with animations */
+.reminder-item {
+    background-color: #222121;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid transparent;
+    transform: translateY(0);
+}
+
+.reminder-item:hover {
+    background-color: #213031;
+    border-color: #4a4a48;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced action buttons with animations */
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #3a3a38;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+    border: 1px solid #2a2a2a;
+    color: #e8e8e3;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.action-btn:hover {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border-color: #3a3a3a;
+}
+
+.action-btn:hover::before {
+    left: 100%;
+}
+
+.action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn i {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.action-btn:hover i {
+    transform: scale(1.1);
+}
+
+/* History container animations */
+#historyContainer {
+    animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#historyContainer.fade-out {
+    animation: slideOutToRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Conversation item animations */
+.conversation-item {
+    animation: fadeInUp 0.3s ease;
+    animation-fill-mode: both;
+}
+
+.conversation-item:nth-child(1) { animation-delay: 0.1s; }
+.conversation-item:nth-child(2) { animation-delay: 0.2s; }
+.conversation-item:nth-child(3) { animation-delay: 0.3s; }
+.conversation-item:nth-child(4) { animation-delay: 0.4s; }
+.conversation-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Enhanced scrollbar for sidebar */
+.sidebar-content::-webkit-scrollbar,
+.reminder-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track,
+.reminder-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb,
+.reminder-list::-webkit-scrollbar-thumb {
+    background: #3a3a38;
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover,
+.reminder-list::-webkit-scrollbar-thumb:hover {
+    background: #4a4a48;
+}
+
+/* Animation keyframes */
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Enhanced processing reminder animation */
+.processing-reminder {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(90deg, #213031, #2a3a3b, #213031, #2a3a3b);
+    background-size: 300% 100%;
+    animation: shimmer 2s infinite;
+    border: 1px dashed #4accd1;
+    opacity: 0.9;
+}
+
+/* Enhanced notification animations */
+@keyframes slideIn {
+    from { 
+        transform: translateX(100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
+}
+
+@keyframes slideOut {
+    from { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
+    to { 
+        transform: translateX(100%); 
+        opacity: 0; 
+    }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Responsive adjustments for new sidebar size */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        max-width: 247px;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+    }
+}
+
+/* Enhanced collapsed sidebar styles */
+.sidebar.collapsed .sidebar-content {
+    display: none;
+}
+
+.sidebar.collapsed .action-btn {
+    padding: 12px;
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar.collapsed .action-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .action-btn i {
+    font-size: 16px;
+    margin: 0;
+}

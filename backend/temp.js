@@ -1,8 +1,184 @@
-// ============= OPTIMIZED SERVER.JS - RELIABLE REMINDER CREATION =============
+// ============= ENHANCED TIME UTILITIES FOR server.js =============
+// ADD these functions to your server.js file
 
-// Updated processReminderData function with better error handling and confirmation
+// Enhanced date conversion with relative time support
+function convertDateToISO(dateStr, currentDateTime = new Date()) {
+    console.log('🕒 Converting date:', dateStr, 'with current time:', currentDateTime);
+    
+    if (!dateStr || dateStr === '' || dateStr === 'null' || dateStr === 'undefined') {
+        console.log('🗓️ No date provided, defaulting to today');
+        return currentDateTime.toISOString().split('T')[0];
+    }
+    
+    dateStr = dateStr.toLowerCase().trim();
+    
+    // Handle relative dates
+    if (dateStr === 'today') {
+        return currentDateTime.toISOString().split('T')[0];
+    } else if (dateStr === 'tomorrow') {
+        const tomorrow = new Date(currentDateTime);
+        tomorrow.setDate(currentDateTime.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
+    } else if (dateStr === 'yesterday') {
+        const yesterday = new Date(currentDateTime);
+        yesterday.setDate(currentDateTime.getDate() - 1);
+        return yesterday.toISOString().split('T')[0];
+    }
+    
+    // Handle "in X hours/minutes/days" calculations
+    if (dateStr.includes('in ') && (dateStr.includes('hour') || dateStr.includes('minute') || dateStr.includes('day'))) {
+        const now = new Date(currentDateTime);
+        
+        if (dateStr.includes('hour')) {
+            const hours = parseInt(dateStr.match(/\d+/)?.[0] || '1');
+            now.setHours(now.getHours() + hours);
+            console.log(`⏰ Added ${hours} hours: ${now.toISOString()}`);
+            return now.toISOString().split('T')[0];
+        } else if (dateStr.includes('minute')) {
+            const minutes = parseInt(dateStr.match(/\d+/)?.[0] || '30');
+            now.setMinutes(now.getMinutes() + minutes);
+            console.log(`⏰ Added ${minutes} minutes: ${now.toISOString()}`);
+            return now.toISOString().split('T')[0];
+        } else if (dateStr.includes('day')) {
+            const days = parseInt(dateStr.match(/\d+/)?.[0] || '1');
+            now.setDate(now.getDate() + days);
+            console.log(`📅 Added ${days} days: ${now.toISOString()}`);
+            return now.toISOString().split('T')[0];
+        }
+    }
+    
+    // Handle day names
+    if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(dateStr)) {
+        const days = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
+        const targetDay = days[dateStr];
+        const currentDay = currentDateTime.getDay();
+        let daysAhead = targetDay - currentDay;
+        if (daysAhead <= 0) daysAhead += 7;
+        
+        const targetDate = new Date(currentDateTime);
+        targetDate.setDate(currentDateTime.getDate() + daysAhead);
+        console.log(`📅 Next ${dateStr}: ${targetDate.toISOString().split('T')[0]}`);
+        return targetDate.toISOString().split('T')[0];
+    }
+    
+    // Handle month day format like "july 15", "december 25"
+    const monthDayMatch = dateStr.match(/(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})/);
+    
+    if (monthDayMatch) {
+        const monthStr = monthDayMatch[1];
+        const day = parseInt(monthDayMatch[2]);
+        
+        const monthMap = {
+            january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2,
+            april: 3, apr: 3, may: 4, june: 5, jun: 5,
+            july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8,
+            october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11
+        };
+        
+        const month = monthMap[monthStr];
+        
+        try {
+            const targetDate = new Date(currentDateTime.getFullYear(), month, day);
+            if (targetDate < currentDateTime) {
+                targetDate.setFullYear(currentDateTime.getFullYear() + 1);
+            }
+            console.log(`📅 Parsed ${dateStr}: ${targetDate.toISOString().split('T')[0]}`);
+            return targetDate.toISOString().split('T')[0];
+        } catch (error) {
+            console.error('Invalid date:', month, day);
+            return currentDateTime.toISOString().split('T')[0];
+        }
+    }
+    
+    // Handle ISO date format (YYYY-MM-DD)
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dateStr;
+    }
+    
+    // Default to today if nothing matches
+    console.log('📅 Defaulting to today for unrecognized format:', dateStr);
+    return currentDateTime.toISOString().split('T')[0];
+}
+
+// Enhanced time conversion with relative time support
+function convertTimeTo24h(timeStr, currentDateTime = new Date()) {
+    if (!timeStr) return null;
+    
+    timeStr = timeStr.toLowerCase().trim();
+    console.log('🕐 Converting time:', timeStr);
+    
+    // Handle "in X hours/minutes" format
+    if (timeStr.includes('in ') && (timeStr.includes('hour') || timeStr.includes('minute'))) {
+        const now = new Date(currentDateTime);
+        
+        if (timeStr.includes('hour')) {
+            const hours = parseInt(timeStr.match(/\d+/)?.[0] || '1');
+            now.setHours(now.getHours() + hours);
+            const result = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            console.log(`⏰ Calculated time for "${timeStr}": ${result}`);
+            return result;
+        } else if (timeStr.includes('minute')) {
+            const minutes = parseInt(timeStr.match(/\d+/)?.[0] || '30');
+            now.setMinutes(now.getMinutes() + minutes);
+            const result = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            console.log(`⏰ Calculated time for "${timeStr}": ${result}`);
+            return result;
+        }
+    }
+    
+    // Handle 12 AM/PM specifically
+    if (timeStr.includes('12am') || timeStr.includes('12 am')) {
+        return "00:00";
+    } else if (timeStr.includes('12pm') || timeStr.includes('12 pm')) {
+        return "12:00";
+    }
+    
+    // Handle other AM/PM cases
+    const timeMatch = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/);
+    if (timeMatch) {
+        let hour = parseInt(timeMatch[1]);
+        const minute = parseInt(timeMatch[2] || '0');
+        const isPM = timeMatch[3] === 'pm';
+        
+        if (isPM && hour !== 12) {
+            hour += 12;
+        } else if (!isPM && hour === 12) {
+            hour = 0;
+        }
+        
+        const result = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        console.log(`🕐 Converted "${timeStr}" to: ${result}`);
+        return result;
+    }
+    
+    // Handle 24-hour format
+    if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        try {
+            const hour = parseInt(parts[0]);
+            const minute = parseInt(parts[1] || '0');
+            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            }
+        } catch (e) {
+            console.error('Error parsing time:', e);
+        }
+    }
+    
+    // Default times for common words
+    if (timeStr.includes('morning')) return "09:00";
+    if (timeStr.includes('afternoon')) return "14:00";
+    if (timeStr.includes('evening')) return "18:00";
+    if (timeStr.includes('night')) return "20:00";
+    
+    return null;
+}
+
+// Enhanced reminder data processing
 async function processReminderData(reminderData, userId, sessionId, originalMessage) {
-    console.log('🔍 Processing reminder data:', { reminderData, userId, sessionId });
+    console.log('🔍 Processing enhanced reminder data:', { reminderData, userId, sessionId });
+    
+    const currentDateTime = new Date();
     
     if (!reminderData || !reminderData.title) {
         console.log('Invalid reminder data, creating fallback');
@@ -14,14 +190,21 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         };
     }
     
-    // Ensure date defaults to today if not provided
-    if (!reminderData.date || reminderData.date === '' || reminderData.date === 'null') {
-        reminderData.date = 'today';
-    }
+    // Enhanced date/time processing
+    let isoDate, convertedTime;
     
-    // Convert date and time
-    const isoDate = convertDateToISO(reminderData.date);
-    const convertedTime = convertTimeTo24h(reminderData.time);
+    // Check if we have a calculated datetime from the AI
+    if (reminderData.calculatedDateTime) {
+        const calcDate = new Date(reminderData.calculatedDateTime);
+        isoDate = calcDate.toISOString().split('T')[0];
+        convertedTime = `${calcDate.getHours().toString().padStart(2, '0')}:${calcDate.getMinutes().toString().padStart(2, '0')}`;
+        console.log('📅 Using AI calculated datetime:', isoDate, convertedTime);
+    } else {
+        // Use enhanced conversion functions
+        isoDate = convertDateToISO(reminderData.date, currentDateTime);
+        convertedTime = convertTimeTo24h(reminderData.time, currentDateTime);
+        console.log('📅 Using enhanced conversion:', isoDate, convertedTime);
+    }
     
     console.log(`📅 Creating reminder: "${reminderData.title}" on ${isoDate} at ${convertedTime || 'no time'}`);
     
@@ -33,17 +216,17 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         reminderTime = new Date(`${isoDate}T09:00:00`);
     }
     
-    // CRITICAL: Ensure userId is included and valid
+    // Ensure userId is valid
     if (!userId) {
         throw new Error('UserId is required for reminder creation');
     }
     
     console.log('👤 Creating reminder for userId:', userId);
     
-    // Create reminder in database with explicit field validation
+    // Create reminder document
     const reminderDoc = {
         sessionId: sessionId,
-        userId: new mongoose.Types.ObjectId(userId), // Ensure proper ObjectId format
+        userId: new mongoose.Types.ObjectId(userId),
         title: reminderData.title.trim(),
         description: (reminderData.description || '').trim(),
         reminderTime: reminderTime,
@@ -54,18 +237,18 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         updatedAt: new Date()
     };
     
-    console.log('💾 Saving reminder document:', reminderDoc);
+    console.log('💾 Saving enhanced reminder document:', reminderDoc);
     
     const reminder = new Reminder(reminderDoc);
     const savedReminder = await reminder.save();
     
-    // VERIFICATION: Confirm the reminder was saved with userId
+    // Verification
     const verifyReminder = await Reminder.findById(savedReminder._id);
     if (!verifyReminder || !verifyReminder.userId) {
         throw new Error('Reminder was not saved properly with userId');
     }
     
-    console.log('✅ Reminder saved and verified with ID:', savedReminder._id, 'and userId:', savedReminder.userId);
+    console.log('✅ Enhanced reminder saved and verified with ID:', savedReminder._id);
     
     // Update user stats
     await User.findByIdAndUpdate(userId, {
@@ -81,695 +264,200 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         description: savedReminder.description,
         reminderTime: savedReminder.reminderTime,
         status: savedReminder.status,
-        verified: true // Flag to indicate successful verification
+        verified: true,
+        originalMessage: originalMessage,
+        calculationMethod: reminderData.calculatedDateTime ? 'AI_calculated' : 'enhanced_parsing'
     };
 }
 
-// Enhanced chat endpoint with better reminder creation flow
-app.post('/api/chat', authenticateToken, async (req, res) => {
-    try {
-        const { message } = req.body;
-        const userId = req.user._id;
-        const userSessionId = req.sessionId;
+// ============= ENHANCED FRONTEND ERROR HANDLING =============
+// ADD this to your index.html JavaScript section
 
-        if (!message) {
-            return res.status(400).json({ 
-                error: 'Message is required',
-                success: false 
-            });
-        }
-
-        console.log('💬 Processing message:', message, 'for user:', userId);
-
-        // Step 1: Chat API - Get response and detect trigger
-        const model = genAI.getGenerativeModel({ 
-            model: 'gemini-1.5-flash',
-            generationConfig: {
-                maxOutputTokens: 500,
-                temperature: 0.7,
-            }
-        });
-
-        const chatPrompt = CHAT_ANALYSIS_PROMPT.replace('{message}', message);
-        const chatResult = await model.generateContent(chatPrompt);
-        const chatResponse = chatResult.response.text();
-        
-        console.log('🤖 Chat API response:', chatResponse);
-        
-        const chatData = parseJsonResponse(chatResponse);
-        
-        if (!chatData) {
-            // Fallback if JSON parsing fails
-            const fallbackPrompt = `You are remindME, a helpful AI assistant for ${req.user.name}. User says: "${message}". Respond helpfully.`;
-            const fallbackResult = await model.generateContent(fallbackPrompt);
-            const fallbackResponse = fallbackResult.response.text();
-            
-            return res.json({
-                response: fallbackResponse,
-                sessionId: userSessionId,
-                trigger: false,
-                success: true
-            });
-        }
-
-        const responseData = {
-            response: chatData.message || 'I understand your message.',
-            trigger: chatData.trigger || false,
-            sessionId: userSessionId,
-            success: true,
-            reminder_created: null,
-            processing_status: 'completed'
-        };
-
-        console.log('🎯 AI Response generated, trigger detected:', chatData.trigger);
-
-        // Step 2: If trigger is true, process with Data API
-        if (chatData.trigger) {
-            console.log('🔄 Trigger detected, extracting reminder details...');
-            responseData.processing_status = 'processing_reminder';
-            
-            try {
-                // Data API - Extract reminder details
-                const dataPrompt = DATA_EXTRACTION_PROMPT.replace('{message}', message);
-                const dataResult = await model.generateContent(dataPrompt);
-                const dataResponse = dataResult.response.text();
-                
-                console.log('📊 Data API response:', dataResponse);
-                
-                const reminderData = parseJsonResponse(dataResponse);
-                
-                if (reminderData) {
-                    // Process and store the reminder with retry logic
-                    let storedReminder = null;
-                    let attempts = 0;
-                    const maxAttempts = 3;
-                    
-                    while (!storedReminder && attempts < maxAttempts) {
-                        attempts++;
-                        try {
-                            console.log(`🔄 Attempt ${attempts} to create reminder...`);
-                            storedReminder = await processReminderData(reminderData, userId, userSessionId, message);
-                            
-                            if (storedReminder && storedReminder.verified) {
-                                responseData.reminder_created = storedReminder;
-                                responseData.processing_status = 'reminder_created';
-                                console.log(`✅ Reminder created successfully on attempt ${attempts}: ${storedReminder.title}`);
-                                break;
-                            }
-                        } catch (reminderError) {
-                            console.error(`❌ Reminder creation attempt ${attempts} failed:`, reminderError);
-                            if (attempts === maxAttempts) {
-                                console.error('❌ All reminder creation attempts failed');
-                                responseData.processing_status = 'reminder_failed';
-                                responseData.error = 'Failed to create reminder after multiple attempts';
-                            }
-                            // Wait before retry
-                            await new Promise(resolve => setTimeout(resolve, 100));
-                        }
-                    }
-                } else {
-                    console.log('❌ Failed to parse reminder data from Data API');
-                    responseData.processing_status = 'parsing_failed';
-                }
-                
-            } catch (dataError) {
-                console.error('❌ Data API error:', dataError);
-                responseData.processing_status = 'data_api_failed';
-                responseData.error = 'Failed to extract reminder details';
-            }
-        }
-
-        // Save conversation to database
-        try {
-            let conversation = await Conversation.findOne({ 
-                sessionId: userSessionId,
-                userId: userId 
-            });
-            
-            if (!conversation) {
-                conversation = new Conversation({ 
-                    sessionId: userSessionId, 
-                    userId: userId,
-                    messages: [] 
-                });
-            }
-            
-            conversation.messages.push(
-                { role: 'user', content: message, timestamp: new Date() },
-                { role: 'assistant', content: responseData.response, timestamp: new Date() }
-            );
-            
-            await conversation.save();
-
-            // Update user stats
-            await User.findByIdAndUpdate(userId, {
-                $inc: { 'stats.totalConversations': 1 },
-                $set: { 'stats.lastActiveAt': new Date() }
-            });
-
-        } catch (dbError) {
-            console.log('Database save failed:', dbError.message);
-        }
-
-        // Add delay to ensure database consistency before response
-        if (responseData.reminder_created) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        return res.json(responseData);
-
-    } catch (error) {
-        console.error('❌ Chat error:', error.message);
-        res.status(500).json({ 
-            error: 'AI service is temporarily busy. Please try again.',
-            success: false
-        });
-    }
-});
-
-// Enhanced reminders endpoint with better caching and debugging
-app.get('/api/reminders', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user._id;
-        console.log('📋 Fetching reminders for userId:', userId);
-        
-        // Add cache-busting headers
-        res.set({
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-        });
-        
-        const today = new Date();
-        const nextWeek = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
-
-        // Get all reminders for this user with explicit userId query
-        const allReminders = await Reminder.find({ 
-            userId: new mongoose.Types.ObjectId(userId),
-            status: { $ne: 'completed' }
-        }).sort({ reminderTime: 1 }).lean(); // Use lean() for better performance
-
-        console.log(`📊 Found ${allReminders.length} reminders for user ${userId}`);
-        
-        // Debug: Log details of found reminders
-        if (allReminders.length > 0) {
-            allReminders.slice(0, 3).forEach((reminder, index) => {
-                console.log(`📝 Reminder ${index + 1}: "${reminder.title}" at ${reminder.reminderTime} (userId: ${reminder.userId})`);
-            });
+// Enhanced error handling for the frontend
+function handleApiError(error, data) {
+    console.error('❌ API Error:', error, data);
+    
+    if (data?.error) {
+        if (data.error.includes('rate limit') || data.error.includes('quota')) {
+            showNotification('⏳ API rate limit reached. Please wait a minute and try again.', 'error');
+            return 'rate_limit';
+        } else if (data.error.includes('reminder')) {
+            showNotification('⚠️ Could not create reminder. Please try with more specific time details like "remind me in 2 hours" or "tomorrow at 3pm".', 'error');
+            return 'reminder_error';
         } else {
-            console.log('ℹ️  No reminders found for this user');
-        }
-
-        const todayReminders = allReminders.filter(reminder => {
-            const reminderDate = new Date(reminder.reminderTime);
-            return reminderDate.toDateString() === today.toDateString();
-        });
-
-        const upcomingReminders = allReminders.filter(reminder => {
-            const reminderDate = new Date(reminder.reminderTime);
-            return reminderDate >= today && reminderDate <= nextWeek;
-        });
-
-        console.log(`📅 Today: ${todayReminders.length}, Upcoming: ${upcomingReminders.length}, Total: ${allReminders.length}`);
-
-        // Enhanced format function with better error handling
-        const formatReminder = (reminder) => {
-            try {
-                const reminderDate = new Date(reminder.reminderTime);
-                return {
-                    id: reminder._id,
-                    title: reminder.title || 'Untitled Reminder',
-                    description: reminder.description || '',
-                    time: reminderDate.toTimeString().slice(0, 5),
-                    date: reminderDate.toISOString().split('T')[0],
-                    completed: reminder.status === 'completed',
-                    reminderTime: reminder.reminderTime,
-                    status: reminder.status,
-                    priority: reminder.priority
-                };
-            } catch (error) {
-                console.error('Error formatting reminder:', error, reminder);
-                return {
-                    id: reminder._id,
-                    title: 'Error formatting reminder',
-                    description: '',
-                    time: '09:00',
-                    date: today.toISOString().split('T')[0],
-                    completed: false
-                };
-            }
-        };
-
-        const response = {
-            success: true,
-            today_reminders: todayReminders.map(formatReminder),
-            upcoming_reminders: upcomingReminders.map(formatReminder),
-            all_reminders: allReminders.map(formatReminder),
-            total_count: allReminders.length,
-            user_id: userId,
-            timestamp: new Date().toISOString()
-        };
-
-        console.log('📤 Sending reminders response:', {
-            today: response.today_reminders.length,
-            upcoming: response.upcoming_reminders.length,
-            total: response.total_count,
-            userId: userId
-        });
-
-        res.json(response);
-
-    } catch (error) {
-        console.error('❌ Get reminders error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Failed to fetch reminders',
-            error: error.message 
-        });
-    }
-});
-
-// ============= OPTIMIZED FRONTEND JAVASCRIPT FOR INDEX.HTML =============
-
-// Enhanced reminder management with better state tracking
-class ReminderManager {
-    constructor() {
-        this.isLoading = false;
-        this.lastLoadTime = 0;
-        this.loadingTimeout = null;
-        this.reminderCount = 0;
-    }
-
-    // Debounced load function to prevent multiple rapid calls
-    async loadReminders(force = false) {
-        const now = Date.now();
-        
-        // Prevent multiple rapid calls unless forced
-        if (!force && this.isLoading) {
-            console.log('⏳ Reminder loading already in progress, skipping...');
-            return;
-        }
-        
-        // Debounce: Don't reload if we just loaded recently (unless forced)
-        if (!force && (now - this.lastLoadTime) < 1000) {
-            console.log('⏳ Recent load detected, debouncing...');
-            return;
-        }
-
-        this.isLoading = true;
-        this.lastLoadTime = now;
-        
-        try {
-            console.log('🔄 Loading reminders from API...');
-            
-            // Add cache-busting timestamp
-            const response = await fetch(`/api/reminders?t=${now}`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            console.log('📥 Received reminders:', data);
-            
-            // Update reminder count
-            this.reminderCount = data.total_count || 0;
-            
-            // Use upcoming_reminders for sidebar (includes today + next 7 days)
-            if (data.upcoming_reminders && data.upcoming_reminders.length > 0) {
-                console.log(`✅ Found ${data.upcoming_reminders.length} upcoming reminders`);
-                this.displayReminders(data.upcoming_reminders);
-            } else if (data.today_reminders && data.today_reminders.length > 0) {
-                console.log(`✅ Found ${data.today_reminders.length} today's reminders`);
-                this.displayReminders(data.today_reminders);
-            } else {
-                console.log('ℹ️  No reminders found');
-                this.displayReminders([]);
-            }
-            
-            // Show success feedback
-            this.showLoadingFeedback('✅ Reminders updated', 'success');
-            
-        } catch (error) {
-            console.error('❌ Error loading reminders:', error);
-            this.showLoadingFeedback('❌ Failed to load reminders', 'error');
-            this.displayReminders([]); // Show empty state
-        } finally {
-            this.isLoading = false;
+            showNotification(`❌ ${data.error}`, 'error');
+            return 'general_error';
         }
     }
-
-    // Enhanced display function with better error handling
-    displayReminders(reminders) {
-        console.log('🎨 Displaying reminders:', reminders);
-        
-        const reminderList = document.getElementById('reminderList');
-        const noReminders = reminderList?.querySelector('.no-reminders');
-        
-        if (!reminderList) {
-            console.error('❌ reminderList element not found!');
-            return;
-        }
-        
-        // Clear existing reminders
-        const existingReminders = reminderList.querySelectorAll('.reminder-item');
-        existingReminders.forEach(item => item.remove());
-        
-        if (!reminders || reminders.length === 0) {
-            console.log('📝 No reminders to display, showing no-reminders message');
-            if (noReminders) {
-                noReminders.style.display = 'block';
-            }
-            return;
-        }
-        
-        // Hide no-reminders message
-        if (noReminders) {
-            noReminders.style.display = 'none';
-        }
-        
-        // Add reminders with enhanced error handling
-        console.log(`📋 Adding ${reminders.length} reminders to sidebar`);
-        reminders.forEach((reminder, index) => {
-            try {
-                this.createReminderElement(reminder, index, reminderList, noReminders);
-            } catch (error) {
-                console.error(`❌ Error creating reminder element ${index}:`, error, reminder);
-            }
-        });
-        
-        console.log('✅ All reminders displayed successfully');
-    }
-
-    createReminderElement(reminder, index, reminderList, noReminders) {
-        console.log(`📝 Adding reminder ${index + 1}: ${reminder.title} at ${reminder.time} on ${reminder.date}`);
-        
-        const timeFormatted = this.formatTime12Hour(reminder.time);
-        const dateFormatted = this.formatDateForReminder(reminder.date);
-        
-        const reminderItem = document.createElement('div');
-        reminderItem.className = 'reminder-item';
-        reminderItem.dataset.reminderId = reminder.id;
-        reminderItem.style.cssText = `
-            background-color: #222121;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transform: translateY(10px);
-        `;
-        
-        // Create header with time on left and date on right
-        const headerDiv = document.createElement('div');
-        headerDiv.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        `;
-        
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'reminder-time';
-        timeSpan.style.cssText = `
-            font-size: 12px;
-            color: #4accd1;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-        `;
-        timeSpan.textContent = timeFormatted;
-        
-        const dateSpan = document.createElement('span');
-        dateSpan.className = 'reminder-date';
-        dateSpan.style.cssText = `
-            font-size: 11px;
-            color: #8a8a88;
-            font-weight: 400;
-            font-family: 'Inter', sans-serif;
-        `;
-        dateSpan.textContent = dateFormatted !== 'Today' ? dateFormatted : '';
-        
-        headerDiv.appendChild(timeSpan);
-        headerDiv.appendChild(dateSpan);
-        
-        // Create title
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'reminder-text';
-        titleDiv.style.cssText = `
-            font-size: 13px;
-            color: #e8e8e3;
-            line-height: 1.4;
-            font-family: 'Inter', sans-serif;
-            margin-top: 2px;
-        `;
-        titleDiv.textContent = reminder.title;
-        
-        // Add description if exists
-        if (reminder.description) {
-            const descriptionDiv = document.createElement('div');
-            descriptionDiv.className = 'reminder-description';
-            descriptionDiv.style.cssText = `
-                font-size: 12px;
-                color: #8a8a88;
-                margin-top: 4px;
-                font-family: 'Inter', sans-serif;
-            `;
-            descriptionDiv.textContent = reminder.description;
-            reminderItem.appendChild(descriptionDiv);
-        }
-        
-        // Assemble the reminder item
-        reminderItem.appendChild(headerDiv);
-        reminderItem.appendChild(titleDiv);
-        
-        // Add hover effects
-        reminderItem.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#213031';
-        });
-        reminderItem.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#222121';
-        });
-        
-        // Add to DOM
-        if (noReminders) {
-            reminderList.insertBefore(reminderItem, noReminders);
-        } else {
-            reminderList.appendChild(reminderItem);
-        }
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            reminderItem.style.opacity = '1';
-            reminderItem.style.transform = 'translateY(0)';
-        });
-    }
-
-    // Reliable refresh after chat with multiple strategies
-    async refreshAfterChat(data) {
-        console.log('🔄 Refreshing reminders after chat response...', data);
-        
-        if (data.reminder_created || data.trigger || data.processing_status === 'reminder_created') {
-            // Show immediate feedback
-            this.showLoadingFeedback('🔄 Updating reminders...', 'info');
-            
-            // Strategy 1: Immediate refresh
-            setTimeout(() => this.loadReminders(true), 500);
-            
-            // Strategy 2: Delayed refresh (in case of database delays)
-            setTimeout(() => this.loadReminders(true), 1500);
-            
-            // Strategy 3: Final confirmation refresh
-            setTimeout(() => this.loadReminders(true), 3000);
-        }
-    }
-
-    // Visual feedback for loading states
-    showLoadingFeedback(message, type = 'info') {
-        const reminderList = document.getElementById('reminderList');
-        if (!reminderList) return;
-        
-        // Remove existing feedback
-        const existingFeedback = reminderList.querySelector('.loading-feedback');
-        if (existingFeedback) {
-            existingFeedback.remove();
-        }
-        
-        // Create feedback element
-        const feedback = document.createElement('div');
-        feedback.className = 'loading-feedback';
-        feedback.style.cssText = `
-            background-color: ${type === 'success' ? '#1dd1a1' : type === 'error' ? '#ff6b6b' : '#4accd1'};
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
-        feedback.textContent = message;
-        
-        reminderList.insertBefore(feedback, reminderList.firstChild);
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            feedback.style.opacity = '1';
-        });
-        
-        // Auto remove after delay
-        setTimeout(() => {
-            if (feedback.parentNode) {
-                feedback.style.opacity = '0';
-                setTimeout(() => {
-                    if (feedback.parentNode) {
-                        feedback.parentNode.removeChild(feedback);
-                    }
-                }, 300);
-            }
-        }, 2000);
-    }
-
-    // Helper functions
-    formatTime12Hour(time24) {
-        if (!time24) return 'All day';
-        
-        const [hours, minutes] = time24.split(':');
-        const hour = parseInt(hours);
-        const minute = minutes;
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        
-        return `${hour12}:${minute} ${ampm}`;
-    }
-
-    formatDateForReminder(dateStr) {
-        if (!dateStr) return '';
-        
-        const reminderDate = new Date(dateStr);
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        
-        const reminderDateOnly = new Date(reminderDate.getFullYear(), reminderDate.getMonth(), reminderDate.getDate());
-        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
-        
-        if (reminderDateOnly.getTime() === todayOnly.getTime()) {
-            return 'Today';
-        } else if (reminderDateOnly.getTime() === tomorrowOnly.getTime()) {
-            return 'Tomorrow';
-        } else {
-            const options = reminderDate.getFullYear() !== today.getFullYear() 
-                ? { month: 'short', day: 'numeric', year: 'numeric' }
-                : { month: 'short', day: 'numeric' };
-            return reminderDate.toLocaleDateString('en-US', options);
-        }
-    }
+    
+    showNotification('❌ Something went wrong. Please try again.', 'error');
+    return 'unknown_error';
 }
 
-// Initialize the reminder manager
-const reminderManager = new ReminderManager();
-
-// Enhanced sendMessage function with reliable reminder refresh
+// Enhanced sendMessage function with better error handling
+// REPLACE your sendMessage function in index.html with this:
 async function sendMessage() {
-    // ... your existing sendMessage code until the fetch part ...
+    const messageInput = document.getElementById('messageInput');
+    const messageText = messageInput.textContent.trim();
     
-    fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            message: messageText,
-            session_id: sessionId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Remove loading indicator
-        loadingDiv.remove();
+    if (messageText !== '' && !isLoading) {
+        isLoading = true;
         
-        if (data.error) {
-            throw new Error(data.error);
-        }
+        console.log('📤 Sending message:', messageText);
+        console.log('🔗 Current conversation ID:', currentConversationId);
 
-        console.log('API Response:', data);
+        // Display user message immediately
+        displayMessage(messageText, 'user', true);
 
-        // Create bot response with formatting
-        var formattedResponse = formatBotResponse(data.message || data.response);
-        var botMessage = `<strong>remindME:</strong><br>${formattedResponse}`;
-        
-        // Check if trigger was activated
-        if (data.trigger) {
-            console.log('Trigger activated - processing reminder...');
-            
-            // Show trigger indicator in chat
-            botMessage += '<br><div class="status-indicator trigger" style="background-color: #c96342; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 8px 0; display: inline-block;"><i class="fas fa-cogs fa-spin"></i> Processing reminder...</div>';
-        }
-        
-        // Create bot message container and display
-        var botMessageContainer = document.createElement('div');
-        botMessageContainer.classList.add('message-container');
-        // ... rest of your bot message creation code ...
+        // Clear input
+        messageInput.textContent = '';
 
-        // ENHANCED: Handle reminder creation with better feedback
-        if (data.reminder_created) {
-            console.log('✅ Reminder successfully created:', data.reminder_created);
-            
-            // Update status indicator
-            setTimeout(() => {
-                const statusIndicator = botMessageDiv.querySelector('.status-indicator.trigger');
-                if (statusIndicator) {
-                    statusIndicator.innerHTML = '<i class="fas fa-check"></i> Reminder created successfully!';
-                    statusIndicator.style.backgroundColor = '#4accd1';
-                }
-                
-                // Refresh reminders with visual feedback
-                reminderManager.refreshAfterChat(data);
-                
-            }, 500);
-            
-        } else if (data.trigger && !data.reminder_created) {
-            console.log('❌ Trigger detected but reminder creation failed');
-            setTimeout(() => {
-                const statusIndicator = botMessageDiv.querySelector('.status-indicator.trigger');
-                if (statusIndicator) {
-                    statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Could not create reminder';
-                    statusIndicator.style.backgroundColor = '#ff6b6b';
-                }
-            }, 1000);
-        }
+        // Show enhanced loading indicator
+        const chatContainer = document.querySelector('.chat-container');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('loading');
+        loadingDiv.innerHTML = '<i class="fas fa-brain fa-pulse" style="margin-right: 8px; color: #4accd1;"></i>Processing with context...';
+        chatContainer.appendChild(loadingDiv);
+        loadingDiv.style.display = 'block';
 
         // Scroll to bottom
         chatContainer.scrollTop = chatContainer.scrollHeight;
-    })
-    .catch(error => {
-        // ... your existing error handling ...
-    })
-    .finally(() => {
-        isLoading = false;
-    });
+
+        // Prepare request with enhanced context
+        const requestBody = {
+            message: messageText,
+            timestamp: new Date().toISOString(),
+            clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+        
+        // Include conversation ID for context
+        if (currentConversationId && !isNewConversation) {
+            requestBody.conversationId = currentConversationId;
+            console.log('📎 Adding conversation context for:', currentConversationId);
+        }
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            // Remove loading indicator
+            loadingDiv.remove();
+            
+            // Enhanced error handling
+            if (!response.ok || data.error) {
+                const errorType = handleApiError(response, data);
+                
+                if (errorType === 'rate_limit') {
+                    // Show helpful message for rate limits
+                    const helpDiv = document.createElement('div');
+                    helpDiv.classList.add('error-message');
+                    helpDiv.innerHTML = `
+                        <i class="fas fa-clock"></i> 
+                        <strong>Rate limit reached</strong><br>
+                        The AI service has reached its daily limit. Please try again in a few minutes, or try:
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>Use more specific times: "remind me at 3pm tomorrow"</li>
+                            <li>Create reminders manually using the + button</li>
+                        </ul>
+                    `;
+                    chatContainer.appendChild(helpDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return;
+                }
+                
+                throw new Error(data.error || 'Request failed');
+            }
+
+            console.log('✅ API Response:', data);
+
+            // Update conversation tracking
+            if (data.conversationId) {
+                if (!currentConversationId || isNewConversation) {
+                    currentConversationId = data.conversationId;
+                    sessionId = data.sessionId;
+                    isNewConversation = false;
+                    console.log('🆕 New conversation created:', currentConversationId);
+                    
+                    if (data.conversationTitle) {
+                        console.log('📝 Conversation titled:', data.conversationTitle);
+                    }
+                } else {
+                    console.log('📝 Continuing conversation:', currentConversationId);
+                }
+            }
+
+            // Display bot response
+            let botResponse = data.message || data.response;
+            
+            // Enhanced reminder processing feedback
+            if (data.trigger) {
+                console.log('🎯 Trigger activated - processing reminder...');
+                showReminderProcessingAnimation();
+                botResponse += '<br><div class="status-indicator trigger" style="background-color: #c96342; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 8px 0; display: inline-block;"><i class="fas fa-cogs fa-spin"></i> Processing reminder with enhanced time parsing...</div>';
+            }
+            
+            displayMessage(botResponse, 'assistant', true);
+
+            // Enhanced reminder creation feedback
+            if (data.trigger) {
+                if (data.reminder_created) {
+                    console.log('✅ Reminder successfully created:', data.reminder_created);
+                    
+                    setTimeout(() => {
+                        removeReminderProcessingAnimation();
+                        loadReminders();
+                        
+                        // Enhanced success message
+                        const method = data.reminder_created.calculationMethod === 'AI_calculated' ? 'AI-calculated' : 'parsed';
+                        showNotification(`✅ Reminder created (${method}): ${data.reminder_created.title}`, 'success');
+                        
+                        const statusIndicator = document.querySelector('.status-indicator.trigger');
+                        if (statusIndicator) {
+                            statusIndicator.innerHTML = '<i class="fas fa-check"></i> Reminder created with enhanced time parsing!';
+                            statusIndicator.style.backgroundColor = '#4accd1';
+                        }
+                    }, 800);
+                    
+                } else {
+                    setTimeout(() => {
+                        removeReminderProcessingAnimation();
+                        
+                        // More helpful error message
+                        const helpText = 'Try more specific formats like: "remind me in 2 hours", "tomorrow at 3pm", or "next Monday at 10am"';
+                        showNotification('⚠️ Could not create reminder. ' + helpText, 'error');
+                        
+                        const statusIndicator = document.querySelector('.status-indicator.trigger');
+                        if (statusIndicator) {
+                            statusIndicator.innerHTML = '<i class="fas fa-info-circle"></i> Try more specific time format';
+                            statusIndicator.style.backgroundColor = '#ff9800';
+                        }
+                    }, 1500);
+                }
+            }
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+        } catch (error) {
+            loadingDiv.remove();
+            removeReminderProcessingAnimation();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('error-message');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+            chatContainer.appendChild(errorDiv);
+            
+            console.error('❌ Error:', error);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } finally {
+            isLoading = false;
+        }
+    }
 }
-
-// Auto-load reminders when page loads and set up intervals
-document.addEventListener('DOMContentLoaded', function() {
-    // Initial load
-    reminderManager.loadReminders(true);
-    
-    // Set up periodic refresh (every 2 minutes)
-    setInterval(() => {
-        reminderManager.loadReminders();
-    }, 2 * 60 * 1000);
-    
-    // Refresh on window focus
-    window.addEventListener('focus', () => {
-        reminderManager.loadReminders();
-    });
-});
-
-// Global functions for backward compatibility
-window.loadReminders = () => reminderManager.loadReminders(true);
-window.displayReminders = (reminders) => reminderManager.displayReminders(reminders);
