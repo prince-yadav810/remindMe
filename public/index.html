@@ -29,27 +29,33 @@
             flex-direction: row-reverse; /* This moves sidebar to right */
         }
 
-        /* Sidebar - Now on the right */
+        /* Enhanced Sidebar - Now 247×706px with animations */
         .sidebar {
-            min-width: 280px;
+            min-width: 300px;
+            max-width: 300px;
             background-color: #222121;
             padding: 16px;
-            transition: min-width 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             z-index: 2;
             order: 2;
             border-left: 1px solid #3a3a38;
-            box-sizing: border-box; /* Ensure consistent width calculation */
+            box-sizing: border-box;
+            border-radius: 12px 0 0 12px;
+            overflow: hidden;
         }
 
         .sidebar.collapsed {
             min-width: 68px;
-            transition: min-width 0.3s ease;
+            width: 68px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar.hide {
             min-width: 0px;
-            transition: min-width 0.3s ease;
+            width: 0px;
+            padding: 0px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar.hoverSidebar {
@@ -69,11 +75,29 @@
             transition: min-width 0.3s ease;
         }
 
-        /* Updated sidebar-column to cover full width */
+        /* Enhanced sidebar content with smooth transitions */
         .sidebar-column {
             width: 100%;
             margin-bottom: 16px;
-            padding: 0; /* Remove any padding that might cause width issues */
+            padding: 0;
+        }
+
+        .sidebar-content {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateX(0);
+        }
+
+        .sidebar-content.fade-out {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .sidebar-content.fade-in {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .sidebar-header {
@@ -82,8 +106,8 @@
             justify-content: flex-start;
             margin-bottom: 24px;
             width: 100%;
-            transition: width 0.2s;
-            padding: 0; /* Remove padding */
+            transition: all 0.3s ease;
+            padding: 0;
         }
 
         .sidebar-header h3 {
@@ -155,22 +179,23 @@
             text-align: center;
         }
 
-        /* Sidebar content styling to ensure full width */
-        .sidebar-content {
-            width: 100%;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Time Display Styles - full width */
+        /* Enhanced time display with subtle animations */
         .time-display {
-            background-color: #213031;
+            background: linear-gradient(135deg, #213031 0%, #1a2828 100%);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             text-align: center;
             width: 100%;
-            box-sizing: border-box; /* Ensure padding is included in width */
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(74, 204, 209, 0.1);
+        }
+
+        .time-display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(74, 204, 209, 0.1);
+            border-color: rgba(74, 204, 209, 0.2);
         }
 
         .current-time {
@@ -179,6 +204,7 @@
             color: #e8e8e3;
             font-family: 'Inter', sans-serif;
             margin-bottom: 8px;
+            transition: color 0.3s ease;
         }
 
         .current-date {
@@ -186,15 +212,16 @@
             color: #b8b8b3;
             font-family: 'Inter', sans-serif;
             font-weight: 400;
+            transition: color 0.3s ease;
         }
 
-        /* Reminder Section Styles - full width */
+        /* Enhanced reminder section */
         .reminder-section {
             flex: 1;
             margin-bottom: 20px;
             width: 100%;
-            padding: 0; /* Remove any padding */
-            box-sizing: border-box; /* Ensure proper width calculation */
+            padding: 0;
+            box-sizing: border-box;
         }
 
         .reminder-title {
@@ -203,16 +230,17 @@
             color: #e8e8e3;
             margin-bottom: 16px;
             font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
         }
 
         .reminder-list {
-            max-height: 300px;
+            max-height: 480px;
             overflow-y: auto;
             padding-right: 4px;
         }
 
         .reminder-list::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .reminder-list::-webkit-scrollbar-track {
@@ -221,22 +249,32 @@
 
         .reminder-list::-webkit-scrollbar-thumb {
             background: #3a3a38;
-            border-radius: 2px;
+            border-radius: 3px;
+            transition: background 0.3s ease;
         }
 
+        .reminder-list::-webkit-scrollbar-thumb:hover {
+            background: #4a4a48;
+        }
+
+        /* Enhanced reminder items with animations */
         .reminder-item {
             background-color: #222121;
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 8px;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+            border: 1px solid transparent;
+            transform: translateY(0);
         }
 
         .reminder-item:hover {
             background-color: #213031;
             border-color: #4a4a48;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .reminder-time {
@@ -286,7 +324,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Action Buttons */
+        /* Enhanced action buttons with animations */
         .sidebar-actions {
             display: flex;
             flex-direction: column;
@@ -322,7 +360,8 @@
         }
 
         .action-btn:active {
-            background-color: #2a2a2a;
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .action-btn i {
@@ -342,7 +381,6 @@
             display: none;
         }
 
-        /* Updated collapsed sidebar actions to show icons */
         .sidebar.collapsed .sidebar-actions {
             display: flex;
             flex-direction: column;
@@ -356,7 +394,6 @@
         }
 
         .sidebar.collapsed .action-btn {
-            background-color: #0f0f0f;
             padding: 12px;
             border-radius: 8px;
             width: 44px;
@@ -379,6 +416,12 @@
             display: block;
         }
 
+        .sidebar.collapsed h3 {
+            display: none;
+            opacity: 0.5;
+            transition: opacity 0.18s ease;
+        }
+
         /* Main Content - Now on the left */
         main {
             flex-grow: 2;
@@ -388,7 +431,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            order: 1; /* Ensure main content stays on left */
+            order: 1;
         }
 
         .chat-container {
@@ -402,7 +445,7 @@
             height: 100vh;
             overflow-y: scroll;
             overflow-x: hidden; 
-            padding-bottom: 160px; /* Increased padding to prevent overlap with typing box */
+            padding-bottom: 160px;
             border-right: 1px solid #3a3a38;
         }
 
@@ -473,7 +516,7 @@
             padding: 0 1rem;
             box-sizing: border-box;
             margin-top: calc(0vh - 56px);
-            margin-bottom: 20px; /* Added margin to create space from bottom */
+            margin-bottom: 20px;
             position: fixed;
             bottom: 0;
             max-width: 100%;
@@ -483,11 +526,6 @@
 
         .sidebar.collapsed + main .typing-box-container {
             width: calc(100% - 68px);
-        }
-
-        .sidebar.hide {
-            width: 0px;
-            padding: 0px;
         }
 
         .sidebar.hide ul li a {
@@ -738,7 +776,7 @@
             transition: opacity 0.2s;
             flex-direction: row;
             align-items: flex-start;
-            margin-bottom: 20px; /* Increased margin between messages */
+            margin-bottom: 20px;
             align-self:center;
             width: 70%;
             max-width: 700px;
@@ -792,12 +830,6 @@
             color: #c96342;
             margin-right: 16px;
             font-size: 24px;
-        }
-
-        .sidebar.collapsed h3 {
-            display: none;
-            opacity: 0.5;
-            transition: opacity 0.18s ease;
         }
 
         .mobile-container {
@@ -887,7 +919,7 @@
             padding: 12px 0;
         }
 
-        /* Chat message formatting styles - updated heading sizes */
+        /* Chat message formatting styles */
         .message h3 {
             color: #4accd1 !important;
             font-weight: 600 !important;
@@ -943,7 +975,6 @@
             font-style: italic !important;
         }
 
-        /* Formatted sections and special content */
         .message div[style*="background-color: #2a2a28"] {
             background-color: #2a2a28 !important;
             border-left: 3px solid #4accd1 !important;
@@ -953,7 +984,6 @@
             color: #e8e8e3 !important;
         }
 
-        /* Table-like structures */
         .message div[style*="display: flex"] {
             display: flex !important;
             background-color: #2a2a28 !important;
@@ -973,46 +1003,125 @@
             font-size: 14px;
         }
 
-        /* Notification and Animation Styles */
+        /* History container animations */
+        #historyContainer {
+            animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #historyContainer.fade-out {
+            animation: slideOutToRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .conversation-item {
+            animation: fadeInUp 0.3s ease;
+            animation-fill-mode: both;
+        }
+
+        .conversation-item:nth-child(1) { animation-delay: 0.1s; }
+        .conversation-item:nth-child(2) { animation-delay: 0.2s; }
+        .conversation-item:nth-child(3) { animation-delay: 0.3s; }
+        .conversation-item:nth-child(4) { animation-delay: 0.4s; }
+        .conversation-item:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Enhanced processing reminder animation */
+        .processing-reminder {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(90deg, #213031, #2a3a3b, #213031, #2a3a3b);
+            background-size: 300% 100%;
+            animation: shimmer 2s infinite;
+            border: 1px dashed #4accd1;
+            opacity: 0.9;
+        }
+
+        /* Animation keyframes */
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutToRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { 
+                transform: translateX(100%); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
         }
-        
+
         @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+            from { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
+            to { 
+                transform: translateX(100%); 
+                opacity: 0; 
+            }
         }
-        
+
         @keyframes fadeOut {
             from { opacity: 1; }
             to { opacity: 0; }
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        .processing-reminder {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .processing-reminder::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(74, 204, 209, 0.3), transparent);
-            animation: slide 2s infinite;
-        }
-        
-        @keyframes slide {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                max-width: 247px;
+                height: auto;
+                max-height: none;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
@@ -1084,17 +1193,21 @@
  </div>
 
 <script>
-// Enhanced JavaScript for remindME with Clean Dual API System
+// Enhanced JavaScript for remindME with Complete Context Management
+// ============= CLEAN FIXED JAVASCRIPT FOR INDEX.HTML =============
+// REPLACE THE ENTIRE <script> section in your index.html with this:
 
-// Session management
+// Global variables
 let sessionId = 'session-' + Date.now();
+let currentConversationId = null;
 let isLoading = false;
+let isHistoryViewActive = false;
+let isNewConversation = true;
 
-// Time and Date functionality
+// ============= TIME AND DATE FUNCTIONALITY =============
 function updateTimeDisplay() {
     const now = new Date();
     
-    // Format time (12-hour format with AM/PM)
     const timeOptions = {
         hour: '2-digit',
         minute: '2-digit',
@@ -1102,7 +1215,6 @@ function updateTimeDisplay() {
     };
     const timeString = now.toLocaleTimeString('en-US', timeOptions);
     
-    // Format date
     const dateOptions = {
         weekday: 'long',
         month: 'short',
@@ -1111,7 +1223,6 @@ function updateTimeDisplay() {
     };
     const dateString = now.toLocaleDateString('en-US', dateOptions);
     
-    // Update DOM elements
     const timeElement = document.getElementById('currentTime');
     const dateElement = document.getElementById('currentDate');
     
@@ -1119,11 +1230,632 @@ function updateTimeDisplay() {
     if (dateElement) dateElement.textContent = dateString;
 }
 
-// Update time every second
 setInterval(updateTimeDisplay, 1000);
-updateTimeDisplay(); // Initial call
+updateTimeDisplay();
 
-// Load reminders from API with enhanced debugging
+// Get current date and time for AI context
+function getCurrentDateTime() {
+    const now = new Date();
+    return {
+        date: now.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        }),
+        time: now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        }),
+        timestamp: now.toISOString()
+    };
+}
+
+// ============= ERROR HANDLING =============
+function handleApiError(error, data) {
+    console.error('❌ API Error:', error, data);
+    
+    if (data?.error) {
+        if (data.error.includes('rate limit') || data.error.includes('quota')) {
+            showNotification('⏳ API rate limit reached. Please wait a minute and try again.', 'error');
+            return 'rate_limit';
+        } else if (data.error.includes('reminder')) {
+            showNotification('⚠️ Could not create reminder. Please try with more specific time details like "remind me in 2 hours" or "tomorrow at 3pm".', 'error');
+            return 'reminder_error';
+        } else {
+            showNotification(`❌ ${data.error}`, 'error');
+            return 'general_error';
+        }
+    }
+    
+    showNotification('❌ Something went wrong. Please try again.', 'error');
+    return 'unknown_error';
+}
+
+// ============= ENHANCED MESSAGE SENDING =============
+async function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const messageText = messageInput.textContent.trim();
+    
+    if (messageText !== '' && !isLoading) {
+        isLoading = true;
+        
+        console.log('📤 Sending message:', messageText);
+        console.log('🔗 Current conversation ID:', currentConversationId);
+
+        // Display user message immediately
+        displayMessage(messageText, 'user', true);
+
+        // Clear input
+        messageInput.textContent = '';
+
+        // Show enhanced loading indicator
+        const chatContainer = document.querySelector('.chat-container');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('loading');
+        loadingDiv.innerHTML = '<i class="fas fa-brain fa-pulse" style="margin-right: 8px; color: #4accd1;"></i>Processing with context...';
+        chatContainer.appendChild(loadingDiv);
+        loadingDiv.style.display = 'block';
+
+        // Scroll to bottom
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Prepare request with enhanced context
+        const requestBody = {
+            message: messageText,
+            timestamp: new Date().toISOString(),
+            clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+        
+        // Include conversation ID for context
+        if (currentConversationId && !isNewConversation) {
+            requestBody.conversationId = currentConversationId;
+            console.log('📎 Adding conversation context for:', currentConversationId);
+        }
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            // Remove loading indicator
+            loadingDiv.remove();
+            
+            // Enhanced error handling
+            if (!response.ok || data.error) {
+                const errorType = handleApiError(response, data);
+                
+                if (errorType === 'rate_limit') {
+                    // Show helpful message for rate limits
+                    const helpDiv = document.createElement('div');
+                    helpDiv.classList.add('error-message');
+                    helpDiv.innerHTML = `
+                        <i class="fas fa-clock"></i> 
+                        <strong>Rate limit reached</strong><br>
+                        The AI service has reached its daily limit. Please try again in a few minutes, or try:
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>Use more specific times: "remind me at 3pm tomorrow"</li>
+                            <li>Create reminders manually using the + button</li>
+                        </ul>
+                    `;
+                    chatContainer.appendChild(helpDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return;
+                }
+                
+                throw new Error(data.error || 'Request failed');
+            }
+
+            console.log('✅ API Response:', data);
+
+            // Update conversation tracking
+            if (data.conversationId) {
+                if (!currentConversationId || isNewConversation) {
+                    currentConversationId = data.conversationId;
+                    sessionId = data.sessionId;
+                    isNewConversation = false;
+                    console.log('🆕 New conversation created:', currentConversationId);
+                    
+                    if (data.conversationTitle) {
+                        console.log('📝 Conversation titled:', data.conversationTitle);
+                    }
+                } else {
+                    console.log('📝 Continuing conversation:', currentConversationId);
+                }
+            }
+
+            // Display bot response
+            let botResponse = data.message || data.response;
+            
+            // Enhanced reminder processing feedback
+            if (data.trigger) {
+                console.log('🎯 Trigger activated - processing reminder...');
+                showReminderProcessingAnimation();
+                botResponse += '<br><div class="status-indicator trigger" style="background-color: #c96342; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 8px 0; display: inline-block;"><i class="fas fa-cogs fa-spin"></i> Processing reminder with enhanced time parsing...</div>';
+            }
+            
+            displayMessage(botResponse, 'assistant', true);
+
+            // Enhanced reminder creation feedback
+            if (data.trigger) {
+                if (data.reminder_created) {
+                    console.log('✅ Reminder successfully created:', data.reminder_created);
+                    
+                    setTimeout(() => {
+                        removeReminderProcessingAnimation();
+                        loadReminders();
+                        
+                        // Enhanced success message
+                        const method = data.reminder_created.calculationMethod === 'AI_calculated' ? 'AI-calculated' : 'parsed';
+                        showNotification(`✅ Reminder created (${method}): ${data.reminder_created.title}`, 'success');
+                        
+                        const statusIndicator = document.querySelector('.status-indicator.trigger');
+                        if (statusIndicator) {
+                            statusIndicator.innerHTML = '<i class="fas fa-check"></i> Reminder created with enhanced time parsing!';
+                            statusIndicator.style.backgroundColor = '#4accd1';
+                        }
+                    }, 800);
+                    
+                } else {
+                    setTimeout(() => {
+                        removeReminderProcessingAnimation();
+                        
+                        // More helpful error message
+                        const helpText = 'Try more specific formats like: "remind me in 2 hours", "tomorrow at 3pm", or "next Monday at 10am"';
+                        showNotification('⚠️ Could not create reminder. ' + helpText, 'error');
+                        
+                        const statusIndicator = document.querySelector('.status-indicator.trigger');
+                        if (statusIndicator) {
+                            statusIndicator.innerHTML = '<i class="fas fa-info-circle"></i> Try more specific time format';
+                            statusIndicator.style.backgroundColor = '#ff9800';
+                        }
+                    }, 1500);
+                }
+            }
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+        } catch (error) {
+            loadingDiv.remove();
+            removeReminderProcessingAnimation();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('error-message');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+            chatContainer.appendChild(errorDiv);
+            
+            console.error('❌ Error:', error);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } finally {
+            isLoading = false;
+        }
+    }
+}
+
+// ============= NEW CHAT FUNCTION =============
+async function startNewChat() {
+    try {
+        console.log('🆕 Starting new chat...');
+        
+        // Reset conversation tracking
+        currentConversationId = null;
+        sessionId = 'session-' + Date.now();
+        isNewConversation = true;
+        
+        // Clear chat container
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            const messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
+            messageContainers.forEach(container => container.remove());
+        }
+        
+        // Call API to mark previous conversations as inactive
+        await fetch('/api/new-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        // Hide history view if active
+        if (isHistoryViewActive) {
+            hideHistoryView();
+            isHistoryViewActive = false;
+        }
+        
+        console.log('✅ New chat started successfully');
+        showNotification('New chat started', 'success');
+        
+    } catch (error) {
+        console.error('❌ Error starting new chat:', error);
+        showNotification('Error starting new chat', 'error');
+    }
+}
+
+// ============= HISTORY VIEW FUNCTIONS =============
+async function viewHistory() {
+    console.log('🔄 Toggling history view. Current state:', isHistoryViewActive);
+    
+    if (isHistoryViewActive) {
+        hideHistoryView();
+    } else {
+        await showHistoryView();
+    }
+    
+    isHistoryViewActive = !isHistoryViewActive;
+}
+
+async function showHistoryView() {
+    console.log('📚 Showing history view...');
+    
+    const sidebar = document.getElementById('sidebar');
+    const sidebarContent = sidebar.querySelector('.sidebar-content');
+    
+    if (!sidebarContent) {
+        console.error('Sidebar content not found');
+        return;
+    }
+    
+    // Hide existing sidebar content
+    sidebarContent.style.display = 'none';
+    
+    // Create history container
+    const historyContainer = document.createElement('div');
+    historyContainer.id = 'historyContainer';
+    historyContainer.className = 'sidebar-content';
+    historyContainer.style.cssText = `
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        height: calc(100vh - 100px);
+        overflow-y: auto;
+    `;
+    
+    // Add header
+    const historyHeader = document.createElement('div');
+    historyHeader.className = 'sidebar-header';
+    historyHeader.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 24px;
+        width: 100%;
+        padding: 0;
+    `;
+    historyHeader.innerHTML = `
+        <h3 style="color: #e8e8e3; font-size: 16px; font-weight: 600; margin: 0; font-family: 'Inter', sans-serif;">
+            Chat History
+        </h3>
+    `;
+    
+    // Add loading indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = `
+        text-align: center;
+        padding: 20px;
+        color: #b8b8b3;
+        font-family: 'Inter', sans-serif;
+    `;
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading conversations...';
+    
+    historyContainer.appendChild(historyHeader);
+    historyContainer.appendChild(loadingDiv);
+    sidebar.appendChild(historyContainer);
+    
+    // Load conversations
+    try {
+        const conversations = await loadConversationHistory();
+        
+        // Remove loading indicator
+        loadingDiv.remove();
+        
+        if (conversations.length === 0) {
+            const noHistory = document.createElement('div');
+            noHistory.style.cssText = `
+                text-align: center;
+                padding: 40px 20px;
+                color: #8a8a88;
+                font-family: 'Inter', sans-serif;
+            `;
+            noHistory.innerHTML = `
+                <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+                <p style="font-size: 14px; margin: 0;">No conversations yet</p>
+                <p style="font-size: 12px; margin: 4px 0 0 0; color: #6a6a68;">Start a new chat to begin</p>
+            `;
+            historyContainer.appendChild(noHistory);
+        } else {
+            const conversationList = document.createElement('div');
+            conversationList.style.cssText = `
+                padding: 0 8px;
+                max-height: calc(100vh - 180px);
+                overflow-y: auto;
+            `;
+            
+            conversations.forEach(conversation => {
+                const conversationItem = createConversationItem(conversation);
+                conversationList.appendChild(conversationItem);
+            });
+            
+            historyContainer.appendChild(conversationList);
+        }
+        
+        console.log('✅ History view shown successfully');
+        
+    } catch (error) {
+        console.error('Error loading conversation history:', error);
+        loadingDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error loading history';
+    }
+}
+
+function hideHistoryView() {
+    console.log('🔒 Hiding history view...');
+    
+    const sidebar = document.getElementById('sidebar');
+    const historyContainer = document.getElementById('historyContainer');
+    const originalContent = sidebar.querySelector('.sidebar-content[style*="display: none"]');
+    
+    if (historyContainer) {
+        historyContainer.style.transition = 'opacity 0.3s ease';
+        historyContainer.style.opacity = '0';
+        
+        setTimeout(() => {
+            historyContainer.remove();
+            console.log('History container removed');
+            
+            if (originalContent) {
+                originalContent.style.display = 'block';
+                originalContent.style.transition = 'opacity 0.3s ease';
+                originalContent.style.opacity = '0';
+                
+                setTimeout(() => {
+                    originalContent.style.opacity = '1';
+                    console.log('Original sidebar content restored');
+                }, 50);
+            }
+        }, 300);
+    }
+}
+
+// ============= CONVERSATION MANAGEMENT =============
+async function loadConversationHistory() {
+    try {
+        console.log('📚 Loading conversation history...');
+        const response = await fetch('/api/conversations');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`Found ${data.conversations.length} conversations`);
+            return data.conversations;
+        } else {
+            console.error('Failed to load conversations:', data.message);
+            return [];
+        }
+    } catch (error) {
+        console.error('Error loading conversation history:', error);
+        showNotification('Error loading conversation history', 'error');
+        return [];
+    }
+}
+
+async function loadConversation(conversationId) {
+    try {
+        console.log('📖 Loading conversation:', conversationId);
+        const response = await fetch(`/api/conversations/${conversationId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentConversationId = conversationId;
+            sessionId = data.conversation.sessionId;
+            isNewConversation = false;
+            
+            // Switch to chat view if not already there
+            if (window.location.hash !== '#chatBot') {
+                window.location.hash = '#chatBot';
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // Clear current chat and load messages
+            const chatContainer = document.querySelector('.chat-container');
+            if (chatContainer) {
+                const messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
+                messageContainers.forEach(container => container.remove());
+                
+                // Load conversation messages
+                data.conversation.messages.forEach((message, index) => {
+                    displayMessage(message.content, message.role, false);
+                });
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            console.log('✅ Conversation loaded successfully');
+            
+            // Hide history view
+            if (isHistoryViewActive) {
+                hideHistoryView();
+                isHistoryViewActive = false;
+            }
+            
+            showNotification(`Loaded: ${data.conversation.title}`, 'success');
+            return true;
+        } else {
+            console.error('Failed to load conversation:', data.message);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error loading conversation:', error);
+        return false;
+    }
+}
+
+function createConversationItem(conversation) {
+    const item = document.createElement('div');
+    item.style.cssText = `
+        background-color: #222121;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        transform: scale(1);
+    `;
+    
+    // Format last activity time
+    const lastActivity = new Date(conversation.lastActivity);
+    const now = new Date();
+    const diffHours = Math.floor((now - lastActivity) / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    let timeText;
+    if (diffHours < 1) {
+        timeText = 'Just now';
+    } else if (diffHours < 24) {
+        timeText = `${diffHours}h ago`;
+    } else if (diffDays < 7) {
+        timeText = `${diffDays}d ago`;
+    } else {
+        timeText = lastActivity.toLocaleDateString();
+    }
+    
+    item.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <div style="color: #e8e8e3; font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif; line-height: 1.3; flex: 1; margin-right: 8px;">
+                ${conversation.title}
+            </div>
+            <div style="color: #8a8a88; font-size: 11px; font-family: 'Inter', sans-serif; white-space: nowrap;">
+                ${timeText}
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #8a8a88; font-size: 11px; font-family: 'Inter', sans-serif;">
+                ${conversation.messageCount} messages
+            </div>
+            ${conversation.isActive ? '<div style="width: 6px; height: 6px; background-color: #4accd1; border-radius: 50%;"></div>' : ''}
+        </div>
+    `;
+    
+    // Enhanced hover effects
+    item.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = '#213031';
+        this.style.borderColor = '#4a4a48';
+        this.style.transform = 'scale(1.02) translateY(-2px)';
+        this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    });
+    
+    item.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '#222121';
+        this.style.borderColor = 'transparent';
+        this.style.transform = 'scale(1) translateY(0)';
+        this.style.boxShadow = 'none';
+    });
+    
+    // Add click handler
+    item.addEventListener('click', async function() {
+        console.log('🖱️ Loading conversation:', conversation.id);
+        
+        this.style.backgroundColor = '#c96342';
+        this.style.color = '#ffffff';
+        this.style.transform = 'scale(0.98)';
+        
+        const originalContent = this.innerHTML;
+        this.innerHTML = '<div style="text-align: center; color: #ffffff;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+        
+        const success = await loadConversation(conversation.id);
+        
+        if (!success) {
+            this.innerHTML = originalContent;
+            this.style.backgroundColor = '#ff6b6b';
+            showNotification('Failed to load conversation', 'error');
+            
+            setTimeout(() => {
+                this.style.backgroundColor = '#222121';
+                this.style.color = '';
+                this.style.transform = 'scale(1)';
+            }, 2000);
+        }
+    });
+    
+    return item;
+}
+
+// ============= MESSAGE DISPLAY =============
+function displayMessage(content, role, animate = true) {
+    const chatContainer = document.querySelector('.chat-container');
+    if (!chatContainer) return;
+
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add('message-container');
+
+    const additionalContent = document.createElement('div');
+    additionalContent.classList.add('additional-content');
+
+    // Create avatar
+    const avatar = document.createElement('div');
+    avatar.style.cssText = `
+        width: 34px; height: 34px; border-radius: 6px; 
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; margin-right: 0px; font-size: 14px;
+        font-family: 'Inter', sans-serif;
+    `;
+
+    if (role === 'user') {
+        avatar.style.background = '#3a3a38';
+        avatar.style.color = '#e8e8e3';
+        avatar.textContent = 'You';
+    } else {
+        avatar.style.background = '#238588';
+        avatar.style.color = '#ffffff';
+        avatar.innerHTML = '<i class="fas fa-robot"></i>';
+    }
+
+    additionalContent.appendChild(avatar);
+
+    // Create message content
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    
+    const prefix = role === 'user' ? '<strong>You:</strong><br>' : '<strong>remindME:</strong><br>';
+    const formattedContent = role === 'assistant' ? formatBotResponse(content) : content.replace(/\n/g, "<br>");
+    messageDiv.innerHTML = prefix + formattedContent;
+
+    messageContainer.appendChild(additionalContent);
+    messageContainer.appendChild(messageDiv);
+    chatContainer.appendChild(messageContainer);
+
+    if (animate) {
+        messageContainer.style.opacity = '0';
+        messageContainer.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            messageContainer.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            messageContainer.style.opacity = '1';
+            messageContainer.style.transform = 'translateY(0)';
+        }, 100);
+    } else {
+        messageContainer.style.opacity = '1';
+    }
+}
+
+// ============= REMINDER FUNCTIONS =============
 async function loadReminders() {
     try {
         console.log('=== Loading reminders from API ===');
@@ -1132,16 +1864,13 @@ async function loadReminders() {
         
         console.log('Full API response:', data);
         
-        // Use upcoming_reminders for sidebar (includes today + next 7 days)
         if (data.upcoming_reminders && data.upcoming_reminders.length > 0) {
-            console.log(`Found ${data.upcoming_reminders.length} upcoming reminders:`, data.upcoming_reminders);
+            console.log(`Found ${data.upcoming_reminders.length} upcoming reminders`);
             displayReminders(data.upcoming_reminders);
         } else if (data.today_reminders && data.today_reminders.length > 0) {
-            // Fallback to today's reminders only
-            console.log(`Fallback: Found ${data.today_reminders.length} today's reminders:`, data.today_reminders);
+            console.log(`Fallback: Found ${data.today_reminders.length} today's reminders`);
             displayReminders(data.today_reminders);
         } else if (data.all_reminders) {
-            // Last resort: filter all reminders for upcoming dates on frontend
             console.log('Filtering all reminders for upcoming dates on frontend...');
             const today = new Date();
             const nextWeek = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
@@ -1149,24 +1878,21 @@ async function loadReminders() {
             const upcomingReminders = data.all_reminders.filter(reminder => {
                 if (!reminder.completed && reminder.date) {
                     const reminderDate = new Date(reminder.date);
-                    console.log(`Comparing reminder date ${reminder.date} (${reminderDate.toDateString()}) with range ${today.toDateString()} to ${nextWeek.toDateString()}`);
                     return reminderDate >= today && reminderDate <= nextWeek;
                 }
                 return false;
             });
-            console.log(`Filtered ${upcomingReminders.length} upcoming reminders:`, upcomingReminders);
+            console.log(`Filtered ${upcomingReminders.length} upcoming reminders`);
             displayReminders(upcomingReminders);
         } else {
             console.log('No reminders data found in response');
             displayReminders([]);
         }
-        console.log('=== Finished loading reminders ===');
     } catch (error) {
         console.error('Error loading reminders:', error);
     }
 }
 
-// Convert 24-hour time to 12-hour format
 function formatTime12Hour(time24) {
     if (!time24) return 'All day';
     
@@ -1179,7 +1905,6 @@ function formatTime12Hour(time24) {
     return `${hour12}:${minute} ${ampm}`;
 }
 
-// Format date for display
 function formatDateForReminder(dateStr) {
     if (!dateStr) return '';
     
@@ -1188,7 +1913,6 @@ function formatDateForReminder(dateStr) {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
-    // Reset time to compare only dates
     const reminderDateOnly = new Date(reminderDate.getFullYear(), reminderDate.getMonth(), reminderDate.getDate());
     const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
@@ -1198,7 +1922,6 @@ function formatDateForReminder(dateStr) {
     } else if (reminderDateOnly.getTime() === tomorrowOnly.getTime()) {
         return 'Tomorrow';
     } else {
-        // Format as "Dec 25" or "Jan 1, 2025" if different year
         const options = reminderDate.getFullYear() !== today.getFullYear() 
             ? { month: 'short', day: 'numeric', year: 'numeric' }
             : { month: 'short', day: 'numeric' };
@@ -1206,10 +1929,8 @@ function formatDateForReminder(dateStr) {
     }
 }
 
-// Display reminders in sidebar with new layout: TIME on left, DATE on right
 function displayReminders(reminders) {
     console.log('=== Displaying reminders ===');
-    console.log('Reminders to display:', reminders);
     
     const reminderList = document.getElementById('reminderList');
     const noReminders = reminderList.querySelector('.no-reminders');
@@ -1219,34 +1940,23 @@ function displayReminders(reminders) {
         return;
     }
     
-    // Clear existing reminders (except no-reminders message)
     const existingReminders = reminderList.querySelectorAll('.reminder-item');
-    console.log(`Removing ${existingReminders.length} existing reminder items`);
     existingReminders.forEach(item => item.remove());
     
     if (!reminders || reminders.length === 0) {
-        console.log('No reminders to display, showing no-reminders message');
         if (noReminders) {
             noReminders.style.display = 'block';
         }
         return;
     }
     
-    // Hide no-reminders message
     if (noReminders) {
         noReminders.style.display = 'none';
-        console.log('Hidden no-reminders message');
     }
     
-    // Add reminders with new layout
-    console.log(`Adding ${reminders.length} reminders to sidebar`);
     reminders.forEach((reminder, index) => {
-        console.log(`Processing reminder ${index + 1}:`, reminder);
-        
         const timeFormatted = formatTime12Hour(reminder.time);
         const dateFormatted = formatDateForReminder(reminder.date);
-        
-        console.log(`Formatted time: ${timeFormatted}, date: ${dateFormatted}`);
         
         const reminderItem = document.createElement('div');
         reminderItem.className = 'reminder-item';
@@ -1260,7 +1970,6 @@ function displayReminders(reminders) {
             flex-direction: column;
         `;
         
-        // Create header with time on left and date on right
         const headerDiv = document.createElement('div');
         headerDiv.style.cssText = `
             display: flex;
@@ -1271,61 +1980,29 @@ function displayReminders(reminders) {
         
         const timeSpan = document.createElement('span');
         timeSpan.className = 'reminder-time';
-        timeSpan.style.cssText = `
-            font-size: 12px;
-            color: #4accd1;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-        `;
         timeSpan.textContent = timeFormatted;
         
         const dateSpan = document.createElement('span');
         dateSpan.className = 'reminder-date';
-        dateSpan.style.cssText = `
-            font-size: 11px;
-            color: #8a8a88;
-            font-weight: 400;
-            font-family: 'Inter', sans-serif;
-        `;
-        // Only show date if it's not "Today"
         dateSpan.textContent = dateFormatted !== 'Today' ? dateFormatted : '';
         
         headerDiv.appendChild(timeSpan);
         headerDiv.appendChild(dateSpan);
         
-        // Create title
         const titleDiv = document.createElement('div');
         titleDiv.className = 'reminder-text';
-        titleDiv.style.cssText = `
-            font-size: 13px;
-            color: #e8e8e3;
-            line-height: 1.4;
-            font-family: 'Inter', sans-serif;
-            margin-top: 2px;
-        `;
         titleDiv.textContent = reminder.title;
         
-        // Add description if exists
-        const descriptionDiv = document.createElement('div');
-        if (reminder.description) {
-            descriptionDiv.className = 'reminder-description';
-            descriptionDiv.style.cssText = `
-                font-size: 12px;
-                color: #8a8a88;
-                margin-top: 4px;
-                font-family: 'Inter', sans-serif;
-            `;
-            descriptionDiv.textContent = reminder.description;
-        }
-        
-        // Assemble the reminder item
         reminderItem.appendChild(headerDiv);
         reminderItem.appendChild(titleDiv);
+        
         if (reminder.description) {
+            const descriptionDiv = document.createElement('div');
+            descriptionDiv.className = 'reminder-description';
+            descriptionDiv.textContent = reminder.description;
             reminderItem.appendChild(descriptionDiv);
         }
         
-        // Add hover effect
         reminderItem.addEventListener('mouseenter', function() {
             this.style.backgroundColor = '#213031';
         });
@@ -1333,36 +2010,21 @@ function displayReminders(reminders) {
             this.style.backgroundColor = '#222121';
         });
         
-        // Add before the no-reminders div
         if (noReminders) {
             reminderList.insertBefore(reminderItem, noReminders);
         } else {
             reminderList.appendChild(reminderItem);
         }
-        
-        console.log(`Added reminder item to DOM: ${reminder.title}`);
     });
-    
-    console.log('=== Finished displaying reminders ===');
 }
 
-// Show processing animation in sidebar
 function showReminderProcessingAnimation() {
     const reminderList = document.getElementById('reminderList');
     const noReminders = reminderList.querySelector('.no-reminders');
     
-    // Create processing animation
     const processingItem = document.createElement('div');
     processingItem.className = 'reminder-item processing-reminder';
     processingItem.id = 'processing-reminder';
-    processingItem.style.cssText = `
-        background: linear-gradient(90deg, #213031, #2a3a3b, #213031);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border: 1px dashed #4accd1;
-        opacity: 0.8;
-    `;
-    
     processingItem.innerHTML = `
         <div class="reminder-time">
             <i class="fas fa-circle-notch fa-spin" style="color: #4accd1; margin-right: 4px;"></i>
@@ -1371,12 +2033,10 @@ function showReminderProcessingAnimation() {
         <div class="reminder-text">Creating your reminder...</div>
     `;
     
-    // Hide no-reminders if visible
     if (noReminders && noReminders.style.display !== 'none') {
         noReminders.style.display = 'none';
     }
     
-    // Add animation at the top
     if (noReminders) {
         reminderList.insertBefore(processingItem, noReminders);
     } else {
@@ -1384,7 +2044,6 @@ function showReminderProcessingAnimation() {
     }
 }
 
-// Remove processing animation
 function removeReminderProcessingAnimation() {
     const processingItem = document.getElementById('processing-reminder');
     if (processingItem) {
@@ -1397,7 +2056,6 @@ function removeReminderProcessingAnimation() {
     }
 }
 
-// Show notification
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -1421,7 +2079,6 @@ function showNotification(message, type = 'info') {
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease-in';
         setTimeout(() => {
@@ -1432,19 +2089,14 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Complete formatBotResponse function - Fixed BR issues
 function formatBotResponse(text) {
-    // Escape HTML to prevent injection
     let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     
-    // Step 1: Handle bold headings with ** ** - must be at start of line or after whitespace
     formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
     
-    // Step 2: Handle headers with ## and ### - must be at start of line
     formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
     formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
     
-    // Step 3: Handle bullet points - convert * items to proper list format
     let lines = formatted.split('\n');
     let inList = false;
     let processedLines = [];
@@ -1452,15 +2104,12 @@ function formatBotResponse(text) {
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
         
-        // Check if line starts with * followed by space (bullet point)
         if (/^\*\s+/.test(line)) {
             if (!inList) {
                 processedLines.push('<ul style="margin: 12px 0; padding-left: 20px; color: #e8e8e3; list-style-type: disc;">');
                 inList = true;
             }
-            // Add list item - remove the * and space
             let listContent = line.substring(2).trim();
-            // Handle bold text within list items only
             listContent = listContent.replace(/\*\*([^*]+?)\*\*/g, '<strong style="color: #4accd1;">$1</strong>');
             processedLines.push(`<li style="margin: 8px 0; line-height: 1.6; display: list-item;">${listContent}</li>`);
         } else {
@@ -1471,7 +2120,6 @@ function formatBotResponse(text) {
             if (line.length > 0) {
                 processedLines.push(line);
             } else if (!inList) {
-                // Only add empty lines when not in a list and if the previous line wasn't empty
                 if (processedLines.length > 0 && processedLines[processedLines.length - 1] !== '') {
                     processedLines.push('');
                 }
@@ -1479,260 +2127,31 @@ function formatBotResponse(text) {
         }
     }
     
-    // Close any remaining list
     if (inList) {
         processedLines.push('</ul>');
     }
     
-    // Join lines with proper spacing
     formatted = processedLines.join('\n');
-    
-    // Step 4: Handle numbered lists - must be at start of line
     formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
-    
-    // Step 5: Handle emphasis with single asterisks - but not part of ** or at word boundaries
     formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
-    
-    // Step 6: Handle code blocks with backticks - single words or phrases
     formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
-    
-    // Step 7: Handle special sections (bracketed content) - only complete brackets
     formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
-    
-    // Step 8: Handle quotations - lines starting with >
     formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
-    
-    // Step 9: Handle line breaks more selectively - FIXED VERSION
-    // Only convert double newlines to paragraph breaks, and avoid breaks around HTML elements
-    formatted = formatted.replace(/\n\s*\n+/g, '</p><p>'); // Convert double newlines to paragraph breaks
-    formatted = '<p>' + formatted + '</p>'; // Wrap in paragraph tags
-    
-    // Clean up empty paragraphs and fix paragraph formatting
-    formatted = formatted.replace(/<p>\s*<\/p>/g, ''); // Remove empty paragraphs
-    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote))/g, '$1'); // Remove paragraph tags before block elements
-    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<\/p>/g, '$1'); // Remove paragraph tags after block elements
-    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)/g, '$1'); // Clean up more cases
-    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<p>/g, '$1'); // Clean up more cases
-    
-    // Step 10: Clean up any remaining issues
-    formatted = formatted.replace(/\n/g, ' '); // Convert remaining single newlines to spaces
-    formatted = formatted.replace(/\s+/g, ' '); // Collapse multiple spaces
-    formatted = formatted.replace(/(<\/p>)\s*(<p>)/g, '$1$2'); // Remove spaces between paragraphs
+    formatted = formatted.replace(/\n\s*\n+/g, '</p><p>');
+    formatted = '<p>' + formatted + '</p>';
+    formatted = formatted.replace(/<p>\s*<\/p>/g, '');
+    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote))/g, '$1');
+    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<\/p>/g, '$1');
+    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)/g, '$1');
+    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<p>/g, '$1');
+    formatted = formatted.replace(/\n/g, ' ');
+    formatted = formatted.replace(/\s+/g, ' ');
+    formatted = formatted.replace(/(<\/p>)\s*(<p>)/g, '$1$2');
     
     return formatted.trim();
 }
 
-// Enhanced message sending with dual API processing
-async function sendMessage() {
-    var messageInput = document.getElementById('messageInput');
-    var messageText = messageInput.textContent.trim();
-    
-    if (messageText !== '' && !isLoading) {
-        isLoading = true;
-        var chatContainer = document.querySelector('.chat-container');
-
-        console.log('User message:', messageText);
-
-        // Create user message
-        var message = `<strong>You:</strong><br>${messageText.replace(/\n/g, "<br>")}`;
-
-        // Create a container div for the message
-        var messageContainer = document.createElement('div');
-        messageContainer.classList.add('message-container');
-
-        // Create a div for the additional content (user avatar)
-        var additionalContent = document.createElement('div');
-        additionalContent.classList.add('additional-content');
-
-        // Create the user avatar
-        var userAvatar = document.createElement('div');
-        userAvatar.style.cssText = `
-            width: 34px; height: 34px; border-radius: 6px; 
-            background: #3a3a38; color: #e8e8e3; 
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; margin-right: 0px; font-size: 14px;
-            font-family: 'Inter', sans-serif;
-        `;
-        userAvatar.textContent = 'You';
-        additionalContent.appendChild(userAvatar);
-        
-        // Create the message div
-        var newMessageDiv = document.createElement('div');
-        newMessageDiv.classList.add('message');
-        newMessageDiv.innerHTML = message;
-
-        // Append elements
-        messageContainer.appendChild(additionalContent);
-        messageContainer.appendChild(newMessageDiv);
-        chatContainer.appendChild(messageContainer);
-
-        // Show message
-        setTimeout(function() {
-            messageContainer.style.opacity = 1;
-        }, 100);
-
-        // Clear input
-        messageInput.textContent = '';
-
-        // Show loading indicator
-        var loadingDiv = document.createElement('div');
-        loadingDiv.classList.add('loading');
-        loadingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 8px; color: #c96342;"></i>Analyzing with AI...';
-        chatContainer.appendChild(loadingDiv);
-        loadingDiv.style.display = 'block';
-
-        // Scroll to bottom
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-
-        // Send to enhanced API
-        fetch('/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: messageText,
-                session_id: sessionId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Remove loading indicator
-            loadingDiv.remove();
-            
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
-            console.log('API Response:', data);
-
-            // Create bot response with formatting
-            var formattedResponse = formatBotResponse(data.message || data.response);
-            var botMessage = `<strong>remindME:</strong><br>${formattedResponse}`;
-            
-            // Check if trigger was activated
-            if (data.trigger) {
-                console.log('Trigger activated - processing reminder...');
-                
-                // Show processing animation in sidebar
-                showReminderProcessingAnimation();
-                
-                // Show trigger indicator in chat
-                botMessage += '<br><div class="status-indicator trigger" style="background-color: #c96342; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 8px 0; display: inline-block;"><i class="fas fa-cogs fa-spin"></i> Processing reminder...</div>';
-            }
-            
-            var botMessageContainer = document.createElement('div');
-            botMessageContainer.classList.add('message-container');
-
-            var botAdditionalContent = document.createElement('div');
-            botAdditionalContent.classList.add('additional-content');
-
-            // Bot avatar
-            var botAvatar = document.createElement('div');
-            botAvatar.style.cssText = `
-                width: 34px; height: 34px; border-radius: 6px; 
-                background: #238588; color: #ffffff;
-                display: flex; align-items: center; justify-content: center;
-                font-weight: bold; margin-right: 0px; font-size: 16px;
-            `;
-            botAvatar.innerHTML = '<i class="fas fa-robot"></i>';
-            botAdditionalContent.appendChild(botAvatar);
-
-            var botMessageDiv = document.createElement('div');
-            botMessageDiv.classList.add('message');
-            botMessageDiv.innerHTML = botMessage;
-
-            botMessageContainer.appendChild(botAdditionalContent);
-            botMessageContainer.appendChild(botMessageDiv);
-            chatContainer.appendChild(botMessageContainer);
-
-            // Show bot message
-            setTimeout(function() {
-                botMessageContainer.style.opacity = 1;
-            }, 100);
-
-            // Handle reminder creation with better validation
-            if (data.trigger) {
-                // We know a trigger was detected, now check if reminder was actually created
-                if (data.reminder_created) {
-                    console.log('Reminder successfully created:', data.reminder_created);
-                    
-                    setTimeout(() => {
-                        removeReminderProcessingAnimation();
-                        
-                        // Force reload reminders from server
-                        loadReminders().then(() => {
-                            console.log('Reminders reloaded successfully');
-                        });
-                        
-                        // Show success notification
-                        showNotification(`Reminder created: ${data.reminder_created.title}`, 'success');
-                        
-                        // Update the status indicator in chat
-                        const statusIndicator = botMessageDiv.querySelector('.status-indicator.trigger');
-                        if (statusIndicator) {
-                            statusIndicator.innerHTML = '<i class="fas fa-check"></i> Reminder created successfully!';
-                            statusIndicator.style.backgroundColor = '#4accd1';
-                        }
-                        
-                    }, 800);
-                    
-                } else {
-                    // Trigger was detected but reminder creation failed
-                    console.log('Trigger detected but reminder creation failed');
-                    setTimeout(() => {
-                        removeReminderProcessingAnimation();
-                        showNotification('Could not create reminder, please try again with more specific details', 'error');
-                        
-                        // Show format help after a short delay
-                        setTimeout(() => {
-                            showReminderFormatHelp();
-                        }, 1000);
-                        
-                        // Update the status indicator in chat
-                        const statusIndicator = botMessageDiv.querySelector('.status-indicator.trigger');
-                        if (statusIndicator) {
-                            statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Could not create reminder';
-                            statusIndicator.style.backgroundColor = '#ff6b6b';
-                        }
-                    }, 1500);
-                }
-            }
-
-             if (data.reminder_created || data.trigger) {
-                console.log('🔄 Refreshing reminders...');
-                setTimeout(() => {
-                    loadReminders(); // This will refresh the sidebar
-                }, 1000);
-            }
-
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        })
-        .catch(error => {
-            // Remove loading indicator
-            loadingDiv.remove();
-            
-            // Remove processing animation if it exists
-            removeReminderProcessingAnimation();
-            
-            // Show error message
-            var errorDiv = document.createElement('div');
-            errorDiv.classList.add('error-message');
-            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
-            chatContainer.appendChild(errorDiv);
-            
-            console.error('Error:', error);
-            showNotification('Error processing message', 'error');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        })
-        .finally(() => {
-            isLoading = false;
-        });
-    }
-}
-
-// Enhanced reminder creation from sidebar
+// ============= MANUAL REMINDER FUNCTIONS =============
 function setReminder() {
     const reminderText = prompt("Enter your reminder:");
     const reminderTime = prompt("Enter time (e.g., 3:30 PM or 15:30):");
@@ -1742,18 +2161,15 @@ function setReminder() {
         const today = new Date().toISOString().split('T')[0];
         const finalDate = reminderDate || today;
         
-        // Convert 12-hour format to 24-hour if needed
         const time24 = convertTo24Hour(reminderTime);
         
         createReminderAPI(reminderText, time24, finalDate);
     }
 }
 
-// Convert 12-hour time to 24-hour format
 function convertTo24Hour(time12) {
     if (!time12) return null;
     
-    // If already in 24-hour format, return as is
     if (!/AM|PM/i.test(time12)) {
         return time12;
     }
@@ -1772,7 +2188,6 @@ function convertTo24Hour(time12) {
     return `${hours.toString().padStart(2, '0')}:${minutes || '00'}`;
 }
 
-// Create reminder via API
 async function createReminderAPI(title, time, date, description = '') {
     try {
         console.log('Creating reminder via API:', { title, time, date, description });
@@ -1797,9 +2212,7 @@ async function createReminderAPI(title, time, date, description = '') {
         if (data.reminder) {
             setTimeout(() => {
                 removeReminderProcessingAnimation();
-                loadReminders().then(() => {
-                    console.log('Reminders reloaded after manual creation');
-                });
+                loadReminders();
                 showNotification('Reminder created successfully!', 'success');
             }, 800);
         } else {
@@ -1813,31 +2226,7 @@ async function createReminderAPI(title, time, date, description = '') {
     }
 }
 
-// Show helpful reminder format suggestions
-function showReminderFormatHelp() {
-    showNotification('Try formats like: "Remind me to call John at 3 PM tomorrow" or "Meeting with team Monday at 10 AM"', 'info');
-}
-
-// Debug function to check stored reminders
-async function debugReminders() {
-    try {
-        const response = await fetch('/api/debug/reminders');
-        const data = await response.json();
-        console.log('=== DEBUG: All stored reminders ===');
-        console.log(data);
-        showNotification(`Found ${data.total_count} total reminders. Check console for details.`, 'info');
-    } catch (error) {
-        console.error('Error fetching debug data:', error);
-    }
-}
-
-// View history function (placeholder for future enhancement)
-async function viewHistory() {
-    // For now, show debug info
-    await debugReminders();
-}
-
-// Navigation and UI functions
+// ============= UI FUNCTIONS =============
 function checkZoomLevel() {
     var zoomLevel = Math.round(window.devicePixelRatio * 100);
     var sidebar = document.getElementById('sidebar');
@@ -1864,32 +2253,7 @@ function toggleSidebar() {
     sidebar.classList.toggle('collapsed');
 }
 
-function startNewChat() {
-    sessionId = 'session-' + Date.now();
-    var chatContainer = document.querySelector('.chat-container');
-    if (chatContainer) {
-        // Clear chat messages but keep the welcome message
-        var messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
-        messageContainers.forEach(function(container) {
-            container.remove();
-        });
-    }
-    
-    fetch('/api/new-chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            session_id: sessionId
-        })
-    })
-    .catch(error => {
-        console.error('Error starting new chat:', error);
-    });
-}
-
-// Hash change handler for navigation
+// ============= NAVIGATION =============
 window.addEventListener('hashchange', () => {
     const content = document.getElementById('content');
     const hash = window.location.hash.slice(1);
@@ -2017,7 +2381,7 @@ window.addEventListener('hashchange', () => {
     }
 });
 
-// Event listeners
+// ============= EVENT LISTENERS =============
 window.addEventListener('resize', checkZoomLevel);
 window.addEventListener('load', checkZoomLevel);
 
@@ -2031,13 +2395,9 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-
-
-// Load reminders when page loads
+// ============= INITIALIZATION =============
 document.addEventListener('DOMContentLoaded', function() {
     loadReminders();
-    
-    // Set up automatic reminder refresh every 5 minutes
     setInterval(loadReminders, 5 * 60 * 1000);
 });
 
