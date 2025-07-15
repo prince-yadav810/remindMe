@@ -26,6 +26,9 @@ const { router: authRouter, authenticateToken } = require('./routes/auth');
 // Load .env from parent directory
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
+console.log('🔑 BREVO_API_KEY loaded:', process.env.BREVO_API_KEY ? 'YES' : 'NO');
+console.log('📧 BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL);
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -398,11 +401,22 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/remindme'
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ============= AUTHENTICATION ROUTES =============
+
 app.use('/auth', authRouter);
 
 // Serve auth page
 app.get('/auth', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/auth.html'));
+});
+
+// Serve forgot password page (NEW ROUTE)
+app.get('/forgot-password', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/forgot-password.html'));
+});
+
+// Serve reset password page (NEW ROUTE) 
+app.get('/reset-password', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/reset-password.html'));
 });
 
 // Serve main app (protected)

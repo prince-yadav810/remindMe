@@ -511,6 +511,19 @@
             display: none;
         }
 
+        /* Success message for password reset */
+        .reset-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+
         /* Animations */
         @keyframes slideInLeft {
             from {
@@ -743,6 +756,7 @@
                 <!-- Error/Success Messages -->
                 <div id="errorMessage" class="error-message"></div>
                 <div id="successMessage" class="success-message"></div>
+                <div id="resetSuccessMessage" class="reset-success"></div>
 
                 <!-- Login Form -->
                 <form id="loginForm" class="auth-form active">
@@ -867,8 +881,10 @@
         function showError(message) {
             const errorEl = document.getElementById('errorMessage');
             const successEl = document.getElementById('successMessage');
+            const resetSuccessEl = document.getElementById('resetSuccessMessage');
             
             successEl.style.display = 'none';
+            resetSuccessEl.style.display = 'none';
             errorEl.textContent = message;
             errorEl.style.display = 'block';
             
@@ -880,8 +896,10 @@
         function showSuccess(message) {
             const errorEl = document.getElementById('errorMessage');
             const successEl = document.getElementById('successMessage');
+            const resetSuccessEl = document.getElementById('resetSuccessMessage');
             
             errorEl.style.display = 'none';
+            resetSuccessEl.style.display = 'none';
             successEl.textContent = message;
             successEl.style.display = 'block';
             
@@ -890,9 +908,21 @@
             }, 5000);
         }
 
+        function showResetSuccess(message) {
+            const errorEl = document.getElementById('errorMessage');
+            const successEl = document.getElementById('successMessage');
+            const resetSuccessEl = document.getElementById('resetSuccessMessage');
+            
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            resetSuccessEl.textContent = message;
+            resetSuccessEl.style.display = 'block';
+        }
+
         function clearMessages() {
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('resetSuccessMessage').style.display = 'none';
         }
 
         // Loading state management
@@ -1005,14 +1035,32 @@
             }
         });
 
-        // Forgot password handler
+        // Forgot password handler - Updated to redirect to new page
         function showForgotPassword() {
-            const email = prompt('Enter your email address:');
-            if (email) {
-                showSuccess('Password reset link sent to your email!');
-                // TODO: Implement actual forgot password functionality
+            // Get current email from login form if filled
+            const currentEmail = document.getElementById('loginEmail').value;
+            
+            // Redirect to forgot password page with email if available
+            if (currentEmail) {
+                window.location.href = `/forgot-password?email=${encodeURIComponent(currentEmail)}`;
+            } else {
+                window.location.href = '/forgot-password';
             }
         }
+
+        // Handle URL parameters for password reset success
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const resetParam = urlParams.get('reset');
+            const emailParam = urlParams.get('email');
+            
+            if (resetParam === 'success') {
+                showResetSuccess('🎉 Password reset successful! You can now sign in with your new password.');
+                if (emailParam) {
+                    document.getElementById('loginEmail').value = emailParam;
+                }
+            }
+        });
 
         // Add smooth scroll to anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

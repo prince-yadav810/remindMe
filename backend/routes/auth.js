@@ -1,16 +1,41 @@
-// ============= backend/routes/auth.js (COMPLETELY CLEAN VERSION) =============
+// ============= backend/routes/auth.js (UPDATED WITH OTP FUNCTIONALITY) =============
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/user');
+const emailService = require('../utils/email-service');
 
 const router = express.Router();
 
 // JWT Secret from environment
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
 
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: {
+    success: false,
+    message: 'Too many authentication attempts. Please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 password reset attempts per hour
+  message: {
+    success: false,
+    message: 'Too many password reset attempts. Please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Signup endpoint
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
   try {
     console.log('📝 Signup attempt:', req.body.email);
     
@@ -30,6 +55,15 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         message: 'Password must be at least 8 characters long' 
+      });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address'
       });
     }
 
@@ -92,7 +126,7 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login endpoint
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     console.log('🔑 Login attempt:', req.body.email);
     
@@ -132,6 +166,9 @@ router.post('/login', async (req, res) => {
     user.sessionId = sessionId;
     user.lastLogin = new Date();
     user.stats.lastActiveAt = new Date();
+    
+    // Clear any existing password reset OTP on successful login
+    user.clearPasswordResetOTP();
     await user.save();
 
     // Generate JWT token
@@ -174,6 +211,183 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Server error during login' 
+    });
+  }
+});
+
+// Forgot Password endpoint - Send OTP
+router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
+  try {
+    console.log('🔑 Forgot password request');
+    
+    const { email } = req.body;
+
+    // Input validation
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email address is required'
+      });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address'
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    
+    // Always return success for security (don't reveal if email exists)
+    const successMessage = 'If an account with this email exists, you will receive a verification code shortly.';
+    
+    if (!user) {
+      console.log('❌ Password reset requested for non-existent email:', email);
+      return res.json({
+        success: true,
+        message: successMessage
+      });
+    }
+
+    // Check if user is using OAuth (can't reset password for OAuth users)
+    if (user.authProvider !== 'local') {
+      console.log('❌ Password reset requested for OAuth user:', email);
+      return res.json({
+        success: true,
+        message: successMessage
+      });
+    }
+
+    // Generate OTP
+    const otp = user.generatePasswordResetOTP();
+    await user.save();
+
+    console.log(`🔢 OTP generated for ${email}: ${otp}`);
+
+    // Send OTP via email
+    try {
+      await emailService.sendPasswordResetOTP(user, otp);
+      console.log(`✅ OTP email sent to: ${email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send OTP email:', emailError);
+      
+      // Clear the OTP if email failed
+      user.clearPasswordResetOTP();
+      await user.save();
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification code. Please try again.'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: successMessage
+    });
+
+  } catch (error) {
+    console.error('❌ Forgot password error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.'
+    });
+  }
+});
+
+// Reset Password endpoint - Verify OTP and reset password
+router.post('/reset-password', authLimiter, async (req, res) => {
+  try {
+    console.log('🔄 Password reset attempt');
+    
+    const { email, otp, newPassword } = req.body;
+
+    // Input validation
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, verification code, and new password are required'
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 8 characters long'
+      });
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code must be exactly 6 digits'
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code or email address'
+      });
+    }
+
+    // Check if user is using OAuth
+    if (user.authProvider !== 'local') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reset password for social login accounts'
+      });
+    }
+
+    // Verify OTP
+    const otpVerification = user.verifyPasswordResetOTP(otp);
+    
+    if (!otpVerification.isValid) {
+      await user.save(); // Save the updated attempt count
+      return res.status(400).json({
+        success: false,
+        message: otpVerification.reason
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update user password and clear OTP
+    user.password = hashedPassword;
+    user.clearPasswordResetOTP();
+    
+    // Invalidate all existing sessions for security
+    user.sessionId = null;
+    
+    await user.save();
+
+    console.log(`✅ Password reset successful for: ${email}`);
+
+    // Send success notification email
+    try {
+      await emailService.sendPasswordResetSuccessNotification(user);
+    } catch (emailError) {
+      console.error('❌ Failed to send success notification:', emailError);
+      // Continue anyway - the password was reset successfully
+    }
+
+    res.json({
+      success: true,
+      message: 'Password reset successful. You can now sign in with your new password.'
+    });
+
+  } catch (error) {
+    console.error('❌ Reset password error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.'
     });
   }
 });
@@ -312,6 +526,49 @@ router.put('/profile', authenticateToken, async (req, res) => {
       message: 'Error updating profile' 
     });
   }
+});
+
+// Test email endpoint (for development only)
+router.post('/test-email', async (req, res) => {
+  try {
+    // Only allow in development
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email address is required'
+      });
+    }
+
+    await brevoEmailService.sendTestEmail(email);
+    
+    res.json({
+      success: true,
+      message: 'Test email sent successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ Test email error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send test email',
+      error: error.message
+    });
+  }
+});
+
+// Health check endpoint
+router.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Auth service is healthy',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Export router and middleware
