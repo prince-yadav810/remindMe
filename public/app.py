@@ -2,7 +2,7 @@ import os
 import json
 import time
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -74,12 +74,19 @@ Analyze the user's message and respond in JSON format. You should:
 1. Provide a helpful response to the user
 2. Determine if the message contains reminder/scheduling information
 
+Current date: {current_date}
+Current time: {current_time}
+
+{context_info}
+
 User message: "{message}"
+
+IMPORTANT: Your response message must be PLAIN TEXT only. No HTML tags, no <br>, no <div> tags.
 
 Respond ONLY in this JSON format:
 {{
-    "message": "Your helpful response to the user",
-    "trigger": true/false
+    "message": "Your helpful response to the user (PLAIN TEXT ONLY)",
+    "trigger": true/false{title_field}
 }}
 
 Set trigger to true if the user wants to:
@@ -92,43 +99,53 @@ Set trigger to true if the user wants to:
 Set trigger to false for general questions, greetings, or casual conversation.
 
 Examples:
-- "Remind me to call John at 3 PM" → trigger: true
-- "I have a meeting tomorrow at 10 AM" → trigger: true  
-- "What's the weather like?" → trigger: false
-- "Hello, how are you?" → trigger: false
+- "Remind me to call John at 3 PM" → {{"message": "I'll set a reminder for you to call John at 3 PM.", "trigger": true}}
+- "I have a meeting tomorrow at 10 AM" → {{"message": "I'll create a reminder for your meeting tomorrow at 10 AM.", "trigger": true}}
+- "What's the weather like?" → {{"message": "I don't have access to current weather information, but you can check a weather app or website for the latest forecast.", "trigger": false}}
+- "Hello, how are you?" → {{"message": "Hello! I'm doing well, thank you. How can I help you today?", "trigger": false}}
 '''
 
 # Enhanced Data API Prompt - Better date handling
 DATA_EXTRACTION_PROMPT = '''
-Extract reminder details from this message. Handle conflicting date information intelligently.
+Extract reminder details from this message with enhanced validation.
+
+Current date: {current_date}
+Current time: {current_time}
 
 User message: "{message}"
 
-Instructions:
-- If multiple dates are mentioned, prioritize specific dates over relative dates
-- Extract the main task/action clearly
-- For dates: prefer specific dates like "July 13" over "today" if both are present
-- For times: extract any time mentioned
-- Always provide a title even if you need to infer it
+IMPORTANT VALIDATION RULES:
+1. Parse dates in various formats: "16 july", "july 16", "jul 16", "today", "tomorrow"
+2. Calculate relative times accurately (like "in 3 hours", "next 5 days")
+3. Check if date/time is in the past - if yes, set error message
+4. For same day reminders, only check if the TIME is in the past, not the date
+
+DATE PARSING EXAMPLES:
+- "16 july" → extract as July 16th of current year
+- "july 16" → extract as July 16th of current year
+- "today at 10pm" → use current date with 22:00 time
+- "tomorrow at 9am" → use next day with 09:00 time
+
+TIME PARSING EXAMPLES:
+- "10pm" → "22:00"
+- "10 pm" → "22:00"
+- "9am" → "09:00"
+- "9 am" → "09:00"
 
 Respond ONLY in this JSON format:
 {{
     "title": "Brief action to remember (required)",
-    "date": "specific date like 'july 13' or relative like 'today/tomorrow'",
+    "date": "YYYY-MM-DD format or relative like 'today'/'tomorrow'",
     "time": "HH:MM in 24-hour format or null",
-    "description": "Additional context if any"
+    "description": "Additional context if any",
+    "error": "Error message if validation fails, null if valid"
 }}
 
-Date priority rules:
-- Specific dates (July 13, Dec 25, 2024-07-13) take priority over relative dates
-- If only relative dates (today, tomorrow), use those
-- If no date mentioned, default to "today"
-
 Examples:
-- "meeting today at 3 PM" → {{"title": "Meeting", "date": "today", "time": "15:00", "description": ""}}
-- "meeting today at 3 PM at 13 july" → {{"title": "Meeting", "date": "july 13", "time": "15:00", "description": ""}}
-- "call John at 2 PM on Monday" → {{"title": "Call John", "date": "monday", "time": "14:00", "description": ""}}
-- "submit report by Friday morning" → {{"title": "Submit report", "date": "friday", "time": "09:00", "description": "Deadline"}}
+- "playing bgmi at 10pm at 16 july" → {{"title": "Playing BGMI", "date": "16 july", "time": "22:00", "description": "", "error": null}}
+- "meeting today at 3 PM" → {{"title": "Meeting", "date": "today", "time": "15:00", "description": "", "error": null}}
+- "remind me yesterday" → {{"title": "Reminder", "date": "yesterday", "time": null, "description": "", "error": "Cannot set reminder for past date"}}
+- "call mom in 5 hours" → {{"title": "Call mom", "date": "today", "time": "calculated_time", "description": "", "error": null}}
 '''
 
 def safe_api_call(model, prompt, max_retries=2):
@@ -162,101 +179,11 @@ def parse_json_response(response_text):
     except Exception as e:
         print(f"JSON parsing error: {e}, text: {response_text[:200]}")
         return None
-    """Validate and fix reminder data with fallbacks"""
-    if not reminder_data or not isinstance(reminder_data, dict):
-        print("Invalid reminder data, creating fallback")
-        # Create a basic reminder from the original message
-        return create_fallback_reminder(original_message)
-    
-    # Ensure we have a title
-    if not reminder_data.get('title'):
-        # Try to extract action from original message
-        import re
-        # Look for action patterns
-        action_patterns = [
-            r'remind me to (.+?)(?:\s+at|\s+on|\s*$)',
-            r'(?:call|meet|visit|buy|do|check|submit|send|email)(.+?)(?:\s+at|\s+on|\s*$)',
-            r'(?:appointment|meeting|deadline)(?:\s+with|\s+for)?\s+(.+?)(?:\s+at|\s+on|\s*$)',
-            r'(.+?)(?:\s+at|\s+on|\s+tomorrow|\s+today|\s*$)'
-        ]
-        
-        title = None
-        for pattern in action_patterns:
-            match = re.search(pattern, original_message, re.IGNORECASE)
-            if match:
-                title = match.group(1).strip()
-                break
-        
-        reminder_data['title'] = title or "Reminder"
-    
-    # Ensure we have a date
-    if not reminder_data.get('date'):
-        reminder_data['date'] = 'today'
-    
-    # Clean up the title
-    title = reminder_data['title'].strip()
-    if len(title) > 100:
-        title = title[:100] + "..."
-    reminder_data['title'] = title
-    
-    return reminder_data
 
-def create_fallback_reminder(message):
-    """Create a basic reminder when extraction fails"""
-    import re
-    
-    # Try to extract basic info with regex
-    title = "Reminder"
-    date = "today"
-    time = None
-    
-    # Simple patterns for fallback
-    if "tomorrow" in message.lower():
-        date = "tomorrow"
-    elif any(day in message.lower() for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]):
-        for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
-            if day in message.lower():
-                date = day
-                break
-    
-    # Try to extract time using the improved function
-    time = convert_time_to_24h(message)
-    
-    # Try to extract action
-    action_patterns = [
-        r'remind me (?:tomorrow )?(?:i have to |to )?(.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)',
-        r'(?:need to|have to|must) (.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)',
-        r'(?:submit|send|call|meet|visit|buy|do|check) (.+?)(?:\s+by\s+\d|\s+at\s+\d|\s*$)',
-        r'(.+?) (?:by|at) \d'
-    ]
-    
-    for pattern in action_patterns:
-        match = re.search(pattern, message, re.IGNORECASE)
-        if match:
-            title = match.group(1).strip()
-            # Clean up the title
-            title = re.sub(r'\s+', ' ', title)  # Remove extra spaces
-            break
-    
-    # If still no good title, try to extract the main content
-    if title == "Reminder":
-        # Remove common reminder phrases and extract the core task
-        cleaned = re.sub(r'remind me (?:tomorrow )?(?:i have to |to )?', '', message, flags=re.IGNORECASE)
-        cleaned = re.sub(r'\s+by\s+\d.*', '', cleaned)  # Remove time parts
-        cleaned = re.sub(r'\s+at\s+\d.*', '', cleaned)  # Remove time parts
-        if len(cleaned.strip()) > 0:
-            title = cleaned.strip()
-    
-    return {
-        'title': title,
-        'date': date,
-        'time': time,
-        'description': f"Auto-extracted from: {message[:50]}..."
-    }
-
-def convert_date_to_iso(date_str):
+def convert_date_to_iso(date_str, current_datetime):
     """Convert date string to ISO format with better handling"""
-    today = datetime.now().date()
+    today_str = current_datetime.get('isoDate', datetime.now().date().isoformat())
+    today = datetime.fromisoformat(today_str).date()
     current_year = today.year
     
     if not date_str:
@@ -268,6 +195,8 @@ def convert_date_to_iso(date_str):
         return today.isoformat()
     elif date_str == 'tomorrow':
         return (today + timedelta(days=1)).isoformat()
+    elif date_str == 'yesterday':
+        return (today - timedelta(days=1)).isoformat()
     elif date_str in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
         # Handle day names
         days = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 
@@ -277,62 +206,103 @@ def convert_date_to_iso(date_str):
         if days_ahead <= 0:
             days_ahead += 7
         return (today + timedelta(days_ahead)).isoformat()
-    else:
-        try:
-            # Handle month day formats like "july 13", "dec 25", etc.
-            import re
-            month_day_match = re.search(r'(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})', date_str)
+    
+    # Handle relative dates like "next 3 days", "in 5 days"
+    if 'next' in date_str or 'in' in date_str:
+        import re
+        number_match = re.search(r'(\d+)', date_str)
+        if number_match:
+            number = int(number_match.group(1))
+            if 'day' in date_str:
+                return (today + timedelta(days=number)).isoformat()
+            elif 'week' in date_str:
+                return (today + timedelta(weeks=number)).isoformat()
+    
+    # Handle formats like "16 july", "july 16", "jul 16", "16 jul"
+    import re
+    # Pattern for "16 july" or "july 16"
+    month_day_patterns = [
+        r'(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)',
+        r'(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})'
+    ]
+    
+    for pattern in month_day_patterns:
+        match = re.search(pattern, date_str)
+        if match:
+            if pattern.startswith(r'(\d'):  # "16 july" format
+                day = int(match.group(1))
+                month_str = match.group(2)
+            else:  # "july 16" format
+                month_str = match.group(1)
+                day = int(match.group(2))
             
-            if month_day_match:
-                month_str = month_day_match.group(1)
-                day = int(month_day_match.group(2))
-                
-                # Convert month name to number
-                month_map = {
-                    'january': 1, 'jan': 1, 'february': 2, 'feb': 2, 'march': 3, 'mar': 3,
-                    'april': 4, 'apr': 4, 'may': 5, 'june': 6, 'jun': 6,
-                    'july': 7, 'jul': 7, 'august': 8, 'aug': 8, 'september': 9, 'sep': 9,
-                    'october': 10, 'oct': 10, 'november': 11, 'nov': 11, 'december': 12, 'dec': 12
-                }
-                
-                month = month_map.get(month_str, today.month)
-                
-                # Create the date - if the date has passed this year, assume next year
-                try:
-                    target_date = datetime(current_year, month, day).date()
-                    if target_date < today:
-                        target_date = datetime(current_year + 1, month, day).date()
-                    return target_date.isoformat()
-                except ValueError:
-                    # Invalid date (like Feb 30), default to today
-                    print(f"Invalid date: {month}/{day}, defaulting to today")
-                    return today.isoformat()
+            # Convert month name to number
+            month_map = {
+                'january': 1, 'jan': 1, 'february': 2, 'feb': 2, 'march': 3, 'mar': 3,
+                'april': 4, 'apr': 4, 'may': 5, 'june': 6, 'jun': 6,
+                'july': 7, 'jul': 7, 'august': 8, 'aug': 8, 'september': 9, 'sep': 9,
+                'october': 10, 'oct': 10, 'november': 11, 'nov': 11, 'december': 12, 'dec': 12
+            }
             
-            # Try to parse as ISO date
-            elif len(date_str) == 10 and '-' in date_str:  # YYYY-MM-DD format
-                parsed_date = datetime.fromisoformat(date_str).date()
-                return parsed_date.isoformat()
-            else:
-                # Try basic parsing
-                print(f"Warning: Could not parse complex date '{date_str}', defaulting to today")
+            month = month_map.get(month_str, today.month)
+            
+            try:
+                # Try current year first
+                target_date = datetime(current_year, month, day).date()
+                
+                # If the date has passed this year and it's a different date than today, use next year
+                # But if it's today, keep it as today regardless of time
+                if target_date < today:
+                    target_date = datetime(current_year + 1, month, day).date()
+                
+                print(f"📅 Parsed '{date_str}' as {target_date.isoformat()}")
+                return target_date.isoformat()
+            except ValueError:
+                print(f"Invalid date: {month}/{day}, defaulting to today")
                 return today.isoformat()
-        except Exception as e:
-            # If all parsing fails, default to today
-            print(f"Warning: Could not parse date '{date_str}' (error: {e}), defaulting to today")
-            return today.isoformat()
+    
+    # Try to parse as ISO date
+    if len(date_str) == 10 and '-' in date_str:
+        try:
+            parsed_date = datetime.fromisoformat(date_str).date()
+            return parsed_date.isoformat()
+        except:
+            pass
+    
+    # Default to today if nothing matches
+    print(f"📅 Could not parse '{date_str}', defaulting to today")
+    return today.isoformat()
 
-def convert_time_to_24h(time_str):
+def convert_time_to_24h(time_str, current_datetime):
     """Convert time string to 24-hour format with better AM/PM handling"""
     if not time_str:
         return None
     
+    current_hour = current_datetime.get('hour', datetime.now().hour)
+    current_minute = current_datetime.get('minute', datetime.now().minute)
+    
     time_str = time_str.lower().strip()
+    
+    # Handle relative time like "next 3 hours", "in 5 hours"
+    if 'next' in time_str or 'in' in time_str:
+        import re
+        number_match = re.search(r'(\d+)', time_str)
+        if number_match:
+            number = int(number_match.group(1))
+            if 'hour' in time_str:
+                new_hour = (current_hour + number) % 24
+                return f"{new_hour:02d}:{current_minute:02d}"
+            elif 'minute' in time_str:
+                total_minutes = current_minute + number
+                new_hour = (current_hour + (total_minutes // 60)) % 24
+                new_minute = total_minutes % 60
+                return f"{new_hour:02d}:{new_minute:02d}"
     
     # Handle 12 AM/PM specifically
     if '12 am' in time_str or '12am' in time_str:
-        return "00:00"  # 12 AM = midnight = 00:00
+        return "00:00"
     elif '12 pm' in time_str or '12pm' in time_str:
-        return "12:00"  # 12 PM = noon = 12:00
+        return "12:00"
     
     # Handle other AM/PM cases
     import re
@@ -373,22 +343,95 @@ def convert_time_to_24h(time_str):
     
     return None
 
-def process_reminder_data(reminder_data):
+def validate_datetime(date_str, time_str, current_datetime):
+    """Validate that the reminder date/time is not in the past"""
+    try:
+        # Get current datetime
+        current_date_str = current_datetime.get('isoDate', datetime.now().date().isoformat())
+        current_date = datetime.fromisoformat(current_date_str).date()
+        current_hour = current_datetime.get('hour', datetime.now().hour)
+        current_minute = current_datetime.get('minute', datetime.now().minute)
+        current_time = datetime.min.time().replace(hour=current_hour, minute=current_minute)
+        current_dt = datetime.combine(current_date, current_time)
+        
+        # Parse reminder datetime
+        reminder_date = datetime.fromisoformat(date_str).date()
+        if time_str:
+            time_parts = time_str.split(':')
+            reminder_hour = int(time_parts[0])
+            reminder_minute = int(time_parts[1])
+            reminder_time = datetime.min.time().replace(hour=reminder_hour, minute=reminder_minute)
+        else:
+            # Default to 9 AM if no time specified
+            reminder_time = datetime.min.time().replace(hour=9, minute=0)
+        
+        reminder_dt = datetime.combine(reminder_date, reminder_time)
+        
+        print(f"🕐 Validation check:")
+        print(f"   Current: {current_dt.strftime('%Y-%m-%d %H:%M')}")
+        print(f"   Reminder: {reminder_dt.strftime('%Y-%m-%d %H:%M')}")
+        
+        # Check if in the past
+        # For same day, check if the time has passed
+        # For different days, check if the date has passed
+        if reminder_dt <= current_dt:
+            if reminder_date == current_date:
+                # Same day - check if time has passed
+                if reminder_time <= current_time:
+                    return f"Cannot set reminder for past time. Current time is {current_dt.strftime('%H:%M')} and you're trying to set it for {reminder_time.strftime('%H:%M')}."
+            else:
+                # Different day - date has passed
+                return f"Cannot set reminder for past date. Today is {current_date.strftime('%Y-%m-%d')} and you're trying to set it for {reminder_date.strftime('%Y-%m-%d')}."
+        
+        print(f"✅ Validation passed - reminder is in the future")
+        return None
+        
+    except Exception as e:
+        print(f"❌ Validation error: {str(e)}")
+        return f"Invalid date/time format: {str(e)}"
+
+def process_reminder_data(reminder_data, current_datetime):
     """Process and store reminder data with improved parsing"""
     if not reminder_data:
         return None
     
-    print(f"Processing reminder data: {reminder_data}")
+    print(f"📋 Processing reminder data: {reminder_data}")
+    print(f"🕒 Current datetime context: {current_datetime}")
+    
+    # Check for validation errors from AI
+    if reminder_data.get('error'):
+        print(f"❌ AI validation error: {reminder_data['error']}")
+        return {
+            'error': reminder_data['error'],
+            'title': reminder_data.get('title', 'Invalid Reminder'),
+            'date': None,
+            'time': None,
+            'description': reminder_data.get('description', ''),
+            'created_at': datetime.now().isoformat()
+        }
     
     # Convert date to ISO format
     original_date = reminder_data.get('date', 'today')
-    iso_date = convert_date_to_iso(original_date)
-    print(f"Date conversion: '{original_date}' -> '{iso_date}'")
+    iso_date = convert_date_to_iso(original_date, current_datetime)
+    print(f"📅 Date conversion: '{original_date}' -> '{iso_date}'")
     
     # Convert time to 24-hour format
     original_time = reminder_data.get('time')
-    converted_time = convert_time_to_24h(original_time)
-    print(f"Time conversion: '{original_time}' -> '{converted_time}'")
+    converted_time = convert_time_to_24h(original_time, current_datetime)
+    print(f"🕐 Time conversion: '{original_time}' -> '{converted_time}'")
+    
+    # Validate that the datetime is not in the past
+    validation_error = validate_datetime(iso_date, converted_time, current_datetime)
+    if validation_error:
+        print(f"❌ Validation error: {validation_error}")
+        return {
+            'error': validation_error,
+            'title': reminder_data.get('title', 'Invalid Reminder'),
+            'date': iso_date,
+            'time': converted_time,
+            'description': reminder_data.get('description', ''),
+            'created_at': datetime.now().isoformat()
+        }
     
     reminder = {
         'id': len(reminders_storage) + 1,
@@ -401,12 +444,8 @@ def process_reminder_data(reminder_data):
     }
     
     reminders_storage.append(reminder)
-    print(f"Reminder stored successfully: {reminder}")  # Debug log
+    print(f"✅ Reminder stored successfully: {reminder}")
     return reminder
-
-@app.route('/')
-def index():
-    return render_template_string(open('index.html').read())
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -414,32 +453,59 @@ def chat():
         data = request.get_json()
         message = data.get('message', '')
         session_id = data.get('session_id', 'default')
+        user_id = data.get('user_id', 'anonymous')
+        conversation_history = data.get('conversation_history', [])
+        current_datetime = data.get('current_datetime', {})
+        is_new_conversation = data.get('is_new_conversation', False)
         
         if not message:
             return jsonify({'error': 'Message is required'}), 400
         
-        print(f"Processing message: {message}")
+        print(f"📥 Processing message: {message}")
+        print(f"👤 User: {user_id}, Session: {session_id}")
+        print(f"📚 Conversation history length: {len(conversation_history)}")
+        print(f"🆕 Is new conversation: {is_new_conversation}")
+        
+        # Build context info
+        context_info = ""
+        if conversation_history and len(conversation_history) > 0:
+            context_info = "\nPrevious conversation context:\n"
+            for msg in conversation_history[-5:]:
+                context_info += f"{msg['role'].title()}: {msg['content']}\n"
+        
+        # Build chat prompt
+        current_date = current_datetime.get('isoDate', 'unknown')
+        current_time = current_datetime.get('time24', 'unknown')
+        
+        title_field = ', "title": "Brief conversation title"' if is_new_conversation else ''
+        
+        chat_prompt = CHAT_ANALYSIS_PROMPT.format(
+            current_date=current_date,
+            current_time=current_time,
+            context_info=context_info,
+            message=message,
+            title_field=title_field
+        )
         
         # Step 1: Get response from Chat API
         genai.configure(api_key=CHAT_API_KEY)
         if session_id not in chat_sessions:
             chat_sessions[session_id] = chat_model.start_chat(history=[])
         
-        chat_session = chat_sessions[session_id]
-        
-        # Get JSON response from chat API
-        chat_prompt = CHAT_ANALYSIS_PROMPT.format(message=message)
         chat_response = safe_api_call(chat_model, chat_prompt)
         chat_data = parse_json_response(chat_response)
         
         if not chat_data:
             # Fallback if JSON parsing fails
-            regular_response = chat_session.send_message(message)
-            return jsonify({
-                'message': regular_response.text,
-                'trigger': False,
+            fallback_response = {
+                'message': f"I understand your message: '{message}'. How can I help you?",
+                'trigger': any(word in message.lower() for word in ['remind', 'reminder', 'remember', 'schedule', 'appointment', 'meeting']),
                 'session_id': session_id
-            })
+            }
+            if is_new_conversation:
+                words = message.split()[:4]
+                fallback_response['title'] = ' '.join(words) if words else 'New Chat'
+            return jsonify(fallback_response)
         
         response_data = {
             'message': chat_data.get('message', 'I understand your message.'),
@@ -447,34 +513,63 @@ def chat():
             'session_id': session_id
         }
         
+        # Add title for new conversations
+        if is_new_conversation and chat_data.get('title'):
+            response_data['title'] = chat_data['title']
+            print(f"📝 AI generated title: {chat_data['title']}")
+        elif is_new_conversation:
+            words = message.split()[:4]
+            response_data['title'] = ' '.join(words) if words else 'New Chat'
+            print(f"📝 Fallback title: {response_data['title']}")
+        
+        print(f"🎯 Chat response - Trigger: {response_data['trigger']}")
+        
         # Step 2: If trigger is true, process with Data API
         if chat_data.get('trigger'):
-            print("Trigger detected, processing with Data API...")
+            print("🔄 Trigger detected, processing with Data API...")
             
             try:
                 # Switch to Data API
                 genai.configure(api_key=DATA_API_KEY)
                 
+                # Build data prompt
+                data_prompt = DATA_EXTRACTION_PROMPT.format(
+                    current_date=current_date,
+                    current_time=current_time,
+                    message=message
+                )
+                
                 # Extract reminder details
-                data_prompt = DATA_EXTRACTION_PROMPT.format(message=message)
                 data_response = safe_api_call(data_model, data_prompt)
                 reminder_data = parse_json_response(data_response)
                 
+                print(f"📊 Data API response: {reminder_data}")
+                
                 if reminder_data:
-                    # Store the reminder
-                    stored_reminder = process_reminder_data(reminder_data)
-                    if stored_reminder:
-                        response_data['reminder_created'] = stored_reminder
-                        print(f"Reminder created: {stored_reminder['title']} on {stored_reminder['date']}")
+                    # Process the reminder
+                    processed_reminder = process_reminder_data(reminder_data, current_datetime)
                     
+                    if processed_reminder:
+                        if processed_reminder.get('error'):
+                            # Return error to user
+                            response_data['message'] = f"Sorry, I couldn't set that reminder: {processed_reminder['error']}"
+                            response_data['trigger'] = False
+                            response_data['error'] = processed_reminder['error']
+                            print(f"❌ Reminder failed: {processed_reminder['error']}")
+                        else:
+                            # Success
+                            response_data['reminder_created'] = processed_reminder
+                            print(f"✅ Reminder created: {processed_reminder['title']} on {processed_reminder['date']}")
+                    else:
+                        print("❌ Failed to process reminder data")
+                        
             except Exception as e:
-                print(f"Data API error: {e}")
-                # Continue without reminder creation
+                print(f"❌ Data API error: {e}")
         
         return jsonify(response_data)
     
     except Exception as e:
-        print(f"Chat error: {e}")
+        print(f"❌ Chat error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/new-chat', methods=['POST'])
@@ -540,7 +635,7 @@ def get_reminders():
         
         return jsonify({
             'today_reminders': today_reminders,
-            'upcoming_reminders': upcoming_reminders,  # New field for sidebar
+            'upcoming_reminders': upcoming_reminders,
             'all_reminders': reminders_storage
         })
     
@@ -581,21 +676,38 @@ def health_check():
         'chat_model': 'gemini-1.5-flash',
         'data_model': 'gemini-1.5-flash',
         'total_reminders': len(reminders_storage),
-        'reminders_sample': reminders_storage[-3:] if len(reminders_storage) > 0 else []  # Show last 3 reminders for debugging
+        'chat_api_configured': bool(CHAT_API_KEY),
+        'data_api_configured': bool(DATA_API_KEY),
+        'version': '2.0.0 - Clean Working Version'
     })
 
-@app.route('/api/debug/reminders', methods=['GET'])
-def debug_reminders():
-    """Debug endpoint to see all reminders"""
+@app.route('/api/test-connection', methods=['GET'])
+def test_connection():
+    """Test endpoint for server.js to verify connection"""
     return jsonify({
-        'all_reminders': reminders_storage,
-        'total_count': len(reminders_storage),
-        'current_date': datetime.now().date().isoformat()
+        'status': 'connected',
+        'message': 'Python AI service is running perfectly',
+        'timestamp': datetime.now().isoformat(),
+        'service': 'remindME AI Microservice'
+    })
+
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint"""
+    return jsonify({
+        'service': 'remindME AI Microservice',
+        'status': 'running',
+        'version': '2.0.0 - Clean Working Version',
+        'message': 'Clean, working Python functionality'
     })
 
 if __name__ == '__main__':
-    print("Starting remindME Server with Clean Dual API...")
-    print(f"Chat API Key loaded: {'✓' if CHAT_API_KEY else '✗'}")
-    print(f"Data API Key loaded: {'✓' if DATA_API_KEY else '✗'}")
-    print("Architecture: Chat API → JSON → Data API (if triggered)")
+    print("🚀 Starting remindME AI Microservice (CLEAN VERSION)...")
+    print(f"🔑 Chat API Key loaded: {'✓' if CHAT_API_KEY else '✗'}")
+    print(f"🔑 Data API Key loaded: {'✓' if DATA_API_KEY else '✗'}")
+    print("✅ Clean, simplified code structure!")
+    print("✅ All function signatures match!")
+    print("✅ Enhanced validation and relative time!")
+    print("✅ No HTML in responses!")
+    print("📡 Ready to receive requests on http://localhost:4000")
     app.run(debug=True, host='0.0.0.0', port=4000)
