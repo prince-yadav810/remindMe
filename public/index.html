@@ -1123,6 +1123,368 @@
                 border-radius: 0;
             }
         }
+
+        /* Settings Modal Styles */
+.settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3.2px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-modal {
+    background-color: #2A2A2A;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    display: flex;
+    border: 1px solid #3a3a38;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.settings-overlay.active .settings-modal {
+    transform: scale(1);
+}
+
+.settings-sidebar {
+    width: 280px;
+    background-color: #222121;
+    border-radius: 16px 0 0 16px;
+    padding: 24px 0;
+    border-right: 1px solid #3a3a38;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px 24px 24px;
+    border-bottom: 1px solid #3a3a38;
+}
+
+.settings-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+}
+
+.settings-close {
+    background: none;
+    border: none;
+    color: #b8b8b3;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.settings-close:hover {
+    background-color: #3a3a38;
+    color: #e8e8e3;
+}
+
+.settings-nav {
+    padding: 24px 0;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    color: #b8b8b3;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-nav-item:hover {
+    background-color: #3a3a38;
+    color: #e8e8e3;
+}
+
+.settings-nav-item.active {
+    background-color: #238588;
+    color: #ffffff;
+}
+
+.settings-nav-item i {
+    margin-right: 12px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.settings-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background-color: #2A2A2A;
+    border-radius: 0 16px 16px 0;
+}
+
+.settings-section {
+    display: none;
+}
+
+.settings-section.active {
+    display: block;
+}
+
+.settings-section h2 {
+    color: #e8e8e3;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    font-family: 'Inter', sans-serif;
+}
+
+.settings-group {
+    margin-bottom: 32px;
+}
+
+.settings-group-title {
+    color: #e8e8e3;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-family: 'Inter', sans-serif;
+}
+
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #3a3a38;
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item-info {
+    flex: 1;
+}
+
+.settings-item-label {
+    color: #e8e8e3;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    font-family: 'Inter', sans-serif;
+}
+
+.settings-item-desc {
+    color: #b8b8b3;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.4;
+}
+
+.settings-control {
+    margin-left: 20px;
+}
+
+.settings-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.settings-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.settings-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #3a3a38;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.settings-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #b8b8b3;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .settings-slider {
+    background-color: #4accd1;
+}
+
+input:checked + .settings-slider:before {
+    transform: translateX(20px);
+    background-color: #ffffff;
+}
+
+.settings-select {
+    background-color: #1f1e1d;
+    border: 1px solid #3a3a38;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: #4accd1;
+}
+
+.settings-button {
+    background-color: #238588;
+    border: none;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-button:hover {
+    background-color: #1e5d5f;
+}
+
+.settings-button.secondary {
+    background-color: #3a3a38;
+    color: #e8e8e3;
+}
+
+.settings-button.secondary:hover {
+    background-color: #4a4a48;
+}
+
+.settings-input {
+    background-color: #1f1e1d;
+    border: 1px solid #3a3a38;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    width: 200px;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: #4accd1;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.action-btn.profile-btn {
+    padding: 9px 12px;
+}
+
+.profile-avatar {
+    display: flex;
+    align-items: center;
+}
+
+.profile-name {
+    flex: 1;
+    font-size: 13px;
+    align-items:start;
+    font-weight: 500;
+    color: #f7f7f7;
+    margin-left: 8px;
+}
+
+.memory-usage {
+    background-color: #222121;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #3a3a38;
+}
+
+.memory-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #3a3a38;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.memory-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4accd1, #c96342);
+    transition: width 0.3s ease;
+}
+
+.memory-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #b8b8b3;
+}
+
+.settings-textarea {
+    background-color: #1f1e1d;
+    border: 1px solid #3a3a38;
+    border-radius: 8px;
+    padding: 12px;
+    color: #e8e8e3;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.settings-textarea:focus {
+    outline: none;
+    border-color: #4accd1;
+}
     </style>
 </head>
 <body>
@@ -1163,10 +1525,13 @@
           
           <!-- Action Buttons at bottom -->
           <div class="sidebar-actions">
-              <button class="action-btn" onclick="setReminder()">
-                  <i class="fas fa-plus"></i>
-                  <span>Set Reminder</span>
-              </button>
+            <button class="action-btn profile-btn" onclick="openSettings()">
+                <div class="profile-avatar">
+                    <img src="https://via.placeholder.com/24x24/4accd1/ffffff?text=ME" alt="Profile" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                </div>
+                <span class="profile-name">Your Name</span>
+                <i class="fas fa-cog" style="margin-left: auto; font-size: 14px;"></i>
+            </button>
               <button class="action-btn" onclick="viewHistory()">
                   <i class="fas fa-history"></i>
                   <span>View History</span>
@@ -1191,6 +1556,428 @@
      </main> 
   </div>
  </div>
+
+ <!-- Settings Modal -->
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-modal">
+        <div class="settings-sidebar">
+            <div class="settings-header">
+                <h2 class="settings-title">Settings</h2>
+                <button class="settings-close" onclick="closeSettings()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="settings-nav">
+                <div class="settings-nav-item active" onclick="switchSettingsTab('general')">
+                    <i class="fas fa-cog"></i>
+                    General
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('notifications')">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('personalization')">
+                    <i class="fas fa-user-cog"></i>
+                    Personalization
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('connected-apps')">
+                    <i class="fas fa-plug"></i>
+                    Connected apps
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('memory')">
+                    <i class="fas fa-brain"></i>
+                    Memory
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('security')">
+                    <i class="fas fa-shield-alt"></i>
+                    Security
+                </div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('account')">
+                    <i class="fas fa-user-circle"></i>
+                    Account
+                </div>
+            </nav>
+        </div>
+        
+        <div class="settings-content">
+            <!-- General Settings -->
+            <div class="settings-section active" id="general">
+                <h2>General</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Theme</div>
+                            <div class="settings-item-desc">Choose your preferred theme</div>
+                        </div>
+                        <div class="settings-control">
+                            <select class="settings-select" id="themeSelect">
+                                <option value="system">System</option>
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Language</div>
+                            <div class="settings-item-desc">Select your preferred language</div>
+                        </div>
+                        <div class="settings-control">
+                            <select class="settings-select" id="languageSelect">
+                                <option value="auto">Auto-detect</option>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Spoken language</div>
+                            <div class="settings-item-desc">For best results, select the language you mainly speak</div>
+                        </div>
+                        <div class="settings-control">
+                            <select class="settings-select" id="spokenLanguageSelect">
+                                <option value="auto">Auto-detect</option>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Show follow up suggestions in chats</div>
+                            <div class="settings-item-desc">Display suggested follow-up questions after responses</div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked>
+                                <span class="settings-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Settings -->
+            <div class="settings-section" id="notifications">
+                <h2>Notifications</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Push notifications</div>
+                            <div class="settings-item-desc">Receive notifications about reminders and updates</div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked>
+                                <span class="settings-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Email notifications</div>
+                            <div class="settings-item-desc">Receive email updates about your reminders</div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="settings-toggle">
+                                <input type="checkbox">
+                                <span class="settings-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Sound notifications</div>
+                            <div class="settings-item-desc">Play sound when reminders are triggered</div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked>
+                                <span class="settings-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Personalization Settings -->
+            <div class="settings-section" id="personalization">
+                <h2>Personalization</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Custom Instructions</div>
+                            <div class="settings-item-desc">Provide instructions to customize how remindME responds to you</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button" onclick="openCustomInstructions()">Edit</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Time format</div>
+                            <div class="settings-item-desc">Choose between 12-hour and 24-hour format</div>
+                        </div>
+                        <div class="settings-control">
+                            <select class="settings-select" id="timeFormatSelect">
+                                <option value="12">12-hour (3:30 PM)</option>
+                                <option value="24">24-hour (15:30)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Default reminder time</div>
+                            <div class="settings-item-desc">Set a default time for new reminders</div>
+                        </div>
+                        <div class="settings-control">
+                            <input type="time" class="settings-input" id="defaultReminderTime" value="09:00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Connected Apps Settings -->
+            <div class="settings-section" id="connected-apps">
+                <h2>Connected apps</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Google Calendar</div>
+                            <div class="settings-item-desc">Sync reminders with your Google Calendar</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary">Connect</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Microsoft Outlook</div>
+                            <div class="settings-item-desc">Sync reminders with your Outlook calendar</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary">Connect</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Slack</div>
+                            <div class="settings-item-desc">Receive reminders in your Slack workspace</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary">Connect</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Memory Settings -->
+            <div class="settings-section" id="memory">
+                <h2>Memory</h2>
+                
+                <div class="settings-group">
+                    <div class="memory-usage">
+                        <div class="settings-item-label">Memory Usage</div>
+                        <div class="memory-bar">
+                            <div class="memory-bar-fill" style="width: 65%"></div>
+                        </div>
+                        <div class="memory-stats">
+                            <span>Used: 1.3 GB</span>
+                            <span>Available: 0.7 GB</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Auto-save conversations</div>
+                            <div class="settings-item-desc">Automatically save conversation history</div>
+                        </div>
+                        <div class="settings-control">
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked>
+                                <span class="settings-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Clear conversation history</div>
+                            <div class="settings-item-desc">Remove all saved conversations and messages</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary" onclick="clearConversationHistory()">Clear</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Export data</div>
+                            <div class="settings-item-desc">Download your conversations and reminders</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary" onclick="exportUserData()">Export</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Settings -->
+            <div class="settings-section" id="security">
+                <h2>Security</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Change password</div>
+                            <div class="settings-item-desc">Update your account password</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button" onclick="changePassword()">Change</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Two-factor authentication</div>
+                            <div class="settings-item-desc">Add an extra layer of security to your account</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary">Enable</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Session timeout</div>
+                            <div class="settings-item-desc">Automatically log out after inactivity</div>
+                        </div>
+                        <div class="settings-control">
+                            <select class="settings-select" id="sessionTimeoutSelect">
+                                <option value="never">Never</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="240">4 hours</option>
+                                <option value="480">8 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Active sessions</div>
+                            <div class="settings-item-desc">View and manage your active sessions</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary" onclick="viewActiveSessions()">View</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Settings -->
+            <div class="settings-section" id="account">
+                <h2>Account</h2>
+                
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Name</div>
+                            <div class="settings-item-desc">Your display name</div>
+                        </div>
+                        <div class="settings-control">
+                            <input type="text" class="settings-input" id="displayName" value="Your Name">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Email</div>
+                            <div class="settings-item-desc">Your account email address</div>
+                        </div>
+                        <div class="settings-control">
+                            <input type="email" class="settings-input" id="emailAddress" value="your@email.com">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Profile picture</div>
+                            <div class="settings-item-desc">Upload a profile picture</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary" onclick="uploadProfilePicture()">Upload</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Account deletion</div>
+                            <div class="settings-item-desc">Permanently delete your account and all data</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button secondary" onclick="deleteAccount()">Delete Account</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-label">Sign out</div>
+                            <div class="settings-item-desc">Sign out of your account</div>
+                        </div>
+                        <div class="settings-control">
+                            <button class="settings-button" onclick="signOut()">Sign Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Instructions Modal -->
+<div class="settings-overlay" id="customInstructionsOverlay">
+    <div class="settings-modal" style="max-width: 600px; height: auto;">
+        <div style="padding: 24px; width: 100%;">
+            <div class="settings-header" style="padding: 0 0 24px 0;">
+                <h2 class="settings-title">Custom Instructions</h2>
+                <button class="settings-close" onclick="closeCustomInstructions()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-item-label" style="margin-bottom: 8px;">Instructions</div>
+                <div class="settings-item-desc" style="margin-bottom: 16px;">
+                    Provide instructions to customize how remindME responds to you. These instructions will be considered in all conversations.
+                </div>
+                <textarea class="settings-textarea" id="customInstructionsText" placeholder="Enter your custom instructions here..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+                <button class="settings-button secondary" onclick="closeCustomInstructions()">Cancel</button>
+                <button class="settings-button" onclick="saveCustomInstructions()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 // Enhanced JavaScript for remindME with Complete Context Management
@@ -2090,13 +2877,28 @@ function showNotification(message, type = 'info') {
 }
 
 function formatBotResponse(text) {
-    let formatted = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // First, preserve HTML that should be rendered (like status indicators)
+    const preservedHtml = [];
+    let formatted = text.replace(/<div[^>]*class="status-indicator[^>]*>.*?<\/div>/gi, function(match) {
+        preservedHtml.push(match);
+        return `__PRESERVED_HTML_${preservedHtml.length - 1}__`;
+    });
     
+    // Now escape other HTML
+    formatted = formatted.replace(/<(?!\/?(br|strong|em|code|ul|li|h[1-6]|p|blockquote|i)\b[^>]*>)/gi, '&lt;');
+    formatted = formatted.replace(/(?<!<[^>]*?)>/g, function(match, offset, string) {
+        const beforeMatch = string.substring(0, offset);
+        const lastLt = beforeMatch.lastIndexOf('<');
+        const lastGt = beforeMatch.lastIndexOf('>');
+        return lastLt > lastGt ? match : '&gt;';
+    });
+    
+    // Format markdown-style text
     formatted = formatted.replace(/(^|\s)\*\*([^*\n]+?)\*\*:?(\s|$)/gm, '$1<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$2</h3>$3');
-    
     formatted = formatted.replace(/^###\s+(.+?)$/gm, '<h4 style="color: #e8e8e3; font-weight: 500; margin: 16px 0 8px 0; font-size: 16px; font-family: \'Inter\', sans-serif;">$1</h4>');
     formatted = formatted.replace(/^##\s+(.+?)$/gm, '<h3 style="color: #4accd1; font-weight: 600; margin: 20px 0 12px 0; font-size: 18px; font-family: \'Inter\', sans-serif;">$1</h3>');
     
+    // Process lists
     let lines = formatted.split('\n');
     let inList = false;
     let processedLines = [];
@@ -2119,10 +2921,6 @@ function formatBotResponse(text) {
             }
             if (line.length > 0) {
                 processedLines.push(line);
-            } else if (!inList) {
-                if (processedLines.length > 0 && processedLines[processedLines.length - 1] !== '') {
-                    processedLines.push('');
-                }
             }
         }
     }
@@ -2132,25 +2930,25 @@ function formatBotResponse(text) {
     }
     
     formatted = processedLines.join('\n');
-    formatted = formatted.replace(/^(\d+\.\s+)(.+?)$/gm, '<div style="margin: 8px 0; color: #e8e8e3;"><span style="color: #c96342; font-weight: 600;">$1</span>$2</div>');
+    
+    // Format other markdown elements
     formatted = formatted.replace(/(?<!\*)\*([^*\s][^*]*?[^*\s])\*(?!\*)/g, '<em style="color: #c96342; font-style: italic;">$1</em>');
     formatted = formatted.replace(/`([^`\n]+?)`/g, '<code style="background-color: #3a3a38; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 13px; color: #e8e8e3;">$1</code>');
-    formatted = formatted.replace(/\[([^\[\]]+?)\]/g, '<div style="background-color: #2a2a28; border-left: 3px solid #c96342; padding: 12px; margin: 12px 0; border-radius: 4px; color: #e8e8e3;">$1</div>');
-    formatted = formatted.replace(/^&gt;\s*(.+?)$/gm, '<blockquote style="border-left: 3px solid #c96342; padding: 8px 16px; margin: 12px 0; background-color: #2a2a28; color: #e8e8e3; font-style: italic;">$1</blockquote>');
+    
+    // Convert to paragraphs and clean up
     formatted = formatted.replace(/\n\s*\n+/g, '</p><p>');
     formatted = '<p>' + formatted + '</p>';
     formatted = formatted.replace(/<p>\s*<\/p>/g, '');
-    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote))/g, '$1');
-    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<\/p>/g, '$1');
-    formatted = formatted.replace(/<p>\s*(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)/g, '$1');
-    formatted = formatted.replace(/(<\/?(ul|li|h[3-4]|div|blockquote)[^>]*>)\s*<p>/g, '$1');
     formatted = formatted.replace(/\n/g, ' ');
     formatted = formatted.replace(/\s+/g, ' ');
-    formatted = formatted.replace(/(<\/p>)\s*(<p>)/g, '$1$2');
+    
+    // Restore preserved HTML
+    preservedHtml.forEach((html, index) => {
+        formatted = formatted.replace(`__PRESERVED_HTML_${index}__`, html);
+    });
     
     return formatted.trim();
 }
-
 // ============= MANUAL REMINDER FUNCTIONS =============
 function setReminder() {
     const reminderText = prompt("Enter your reminder:");
@@ -2246,6 +3044,347 @@ function checkZoomLevel() {
         sidebar.style.display = 'block';
         mobileDiv.style.display = 'none';
     }
+}
+
+// ============= SETTINGS MODAL FUNCTIONS =============
+
+function openSettings() {
+    const overlay = document.getElementById('settingsOverlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Load user data
+    loadUserSettings();
+}
+
+function closeSettings() {
+    const overlay = document.getElementById('settingsOverlay');
+    overlay.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    // Save any pending changes
+    saveUserSettings();
+}
+
+function switchSettingsTab(tabName) {
+    // Remove active class from all nav items
+    const navItems = document.querySelectorAll('.settings-nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    
+    // Add active class to clicked nav item
+    event.target.classList.add('active');
+    
+    // Hide all sections
+    const sections = document.querySelectorAll('.settings-section');
+    sections.forEach(section => section.classList.remove('active'));
+    
+    // Show selected section
+    const selectedSection = document.getElementById(tabName);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+}
+
+// ============= CUSTOM INSTRUCTIONS MODAL =============
+
+function openCustomInstructions() {
+    const overlay = document.getElementById('customInstructionsOverlay');
+    overlay.classList.add('active');
+    
+    // Load existing custom instructions
+    const savedInstructions = localStorage.getItem('customInstructions') || '';
+    document.getElementById('customInstructionsText').value = savedInstructions;
+}
+
+function closeCustomInstructions() {
+    const overlay = document.getElementById('customInstructionsOverlay');
+    overlay.classList.remove('active');
+}
+
+function saveCustomInstructions() {
+    const instructions = document.getElementById('customInstructionsText').value;
+    localStorage.setItem('customInstructions', instructions);
+    closeCustomInstructions();
+    showNotification('Custom instructions saved successfully!', 'success');
+}
+
+// ============= SETTINGS FUNCTIONS =============
+
+function loadUserSettings() {
+    // Load theme setting
+    const theme = localStorage.getItem('theme') || 'system';
+    document.getElementById('themeSelect').value = theme;
+    
+    // Load language settings
+    const language = localStorage.getItem('language') || 'auto';
+    document.getElementById('languageSelect').value = language;
+    
+    const spokenLanguage = localStorage.getItem('spokenLanguage') || 'auto';
+    document.getElementById('spokenLanguageSelect').value = spokenLanguage;
+    
+    // Load time format
+    const timeFormat = localStorage.getItem('timeFormat') || '12';
+    document.getElementById('timeFormatSelect').value = timeFormat;
+    
+    // Load default reminder time
+    const defaultReminderTime = localStorage.getItem('defaultReminderTime') || '09:00';
+    document.getElementById('defaultReminderTime').value = defaultReminderTime;
+    
+    // Load user profile data
+    loadUserProfile();
+}
+
+function saveUserSettings() {
+    // Save theme setting
+    const theme = document.getElementById('themeSelect').value;
+    localStorage.setItem('theme', theme);
+    applyTheme(theme);
+    
+    // Save language settings
+    const language = document.getElementById('languageSelect').value;
+    localStorage.setItem('language', language);
+    
+    const spokenLanguage = document.getElementById('spokenLanguageSelect').value;
+    localStorage.setItem('spokenLanguage', spokenLanguage);
+    
+    // Save time format
+    const timeFormat = document.getElementById('timeFormatSelect').value;
+    localStorage.setItem('timeFormat', timeFormat);
+    
+    // Save default reminder time
+    const defaultReminderTime = document.getElementById('defaultReminderTime').value;
+    localStorage.setItem('defaultReminderTime', defaultReminderTime);
+    
+    // Save user profile data
+    saveUserProfile();
+}
+
+function loadUserProfile() {
+    // Load user name and email (these would typically come from your backend)
+    const userName = localStorage.getItem('userName') || 'Your Name';
+    const userEmail = localStorage.getItem('userEmail') || 'your@email.com';
+    
+    document.getElementById('displayName').value = userName;
+    document.getElementById('emailAddress').value = userEmail;
+    
+    // Update profile button
+    const profileName = document.querySelector('.profile-name');
+    if (profileName) {
+        profileName.textContent = userName;
+    }
+}
+
+function saveUserProfile() {
+    const userName = document.getElementById('displayName').value;
+    const userEmail = document.getElementById('emailAddress').value;
+    
+    localStorage.setItem('userName', userName);
+    localStorage.setItem('userEmail', userEmail);
+    
+    // Update profile button
+    const profileName = document.querySelector('.profile-name');
+    if (profileName) {
+        profileName.textContent = userName;
+    }
+}
+
+function applyTheme(theme) {
+    // Apply theme changes to the UI
+    const body = document.body;
+    
+    if (theme === 'light') {
+        body.style.backgroundColor = '#ffffff';
+        body.style.color = '#333333';
+        // Add more light theme styles
+    } else if (theme === 'dark') {
+        body.style.backgroundColor = '#1f1e1d';
+        body.style.color = '#e8e8e3';
+        // Add more dark theme styles
+    } else {
+        // System theme - detect user's system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+    }
+}
+
+// ============= ACCOUNT FUNCTIONS =============
+
+function changePassword() {
+    const newPassword = prompt('Enter your new password:');
+    if (newPassword) {
+        // Here you would typically send a request to your backend
+        showNotification('Password changed successfully!', 'success');
+    }
+}
+
+function uploadProfilePicture() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const profileImg = document.querySelector('.profile-avatar img');
+                if (profileImg) {
+                    profileImg.src = e.target.result;
+                }
+                showNotification('Profile picture updated!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    
+    input.click();
+}
+
+function deleteAccount() {
+    const confirmation = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+    if (confirmation) {
+        const finalConfirmation = prompt('Type "DELETE" to confirm account deletion:');
+        if (finalConfirmation === 'DELETE') {
+            // Here you would typically send a request to your backend
+            showNotification('Account deletion initiated. You will receive a confirmation email.', 'error');
+        }
+    }
+}
+
+function signOut() {
+    const confirmation = confirm('Are you sure you want to sign out?');
+    if (confirmation) {
+        // Clear local storage
+        localStorage.clear();
+        
+        // Redirect to login page or reload
+        window.location.reload();
+    }
+}
+
+// ============= MEMORY FUNCTIONS =============
+
+function clearConversationHistory() {
+    const confirmation = confirm('Are you sure you want to clear all conversation history? This action cannot be undone.');
+    if (confirmation) {
+        // Clear conversations from backend
+        fetch('/api/conversations', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Conversation history cleared successfully!', 'success');
+                // Clear current chat
+                const chatContainer = document.querySelector('.chat-container');
+                if (chatContainer) {
+                    const messageContainers = chatContainer.querySelectorAll('.message-container, .error-message, .loading');
+                    messageContainers.forEach(container => container.remove());
+                }
+            } else {
+                showNotification('Error clearing conversation history', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing conversation history:', error);
+            showNotification('Error clearing conversation history', 'error');
+        });
+    }
+}
+
+function exportUserData() {
+    showNotification('Preparing data export...', 'info');
+    
+    // Export user data
+    fetch('/api/export-data', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'remindme-data-export.json';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showNotification('Data exported successfully!', 'success');
+    })
+    .catch(error => {
+        console.error('Error exporting data:', error);
+        showNotification('Error exporting data', 'error');
+    });
+}
+
+function viewActiveSessions() {
+    // This would typically fetch active sessions from your backend
+    alert('Active sessions feature coming soon!');
+}
+
+// ============= EVENT LISTENERS =============
+
+// Close settings modal when clicking outside
+document.addEventListener('click', function(event) {
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const customInstructionsOverlay = document.getElementById('customInstructionsOverlay');
+    
+    if (event.target === settingsOverlay) {
+        closeSettings();
+    }
+    
+    if (event.target === customInstructionsOverlay) {
+        closeCustomInstructions();
+    }
+});
+
+// Save settings when dropdowns change
+document.addEventListener('DOMContentLoaded', function() {
+    const themeSelect = document.getElementById('themeSelect');
+    const languageSelect = document.getElementById('languageSelect');
+    const spokenLanguageSelect = document.getElementById('spokenLanguageSelect');
+    const timeFormatSelect = document.getElementById('timeFormatSelect');
+    
+    if (themeSelect) {
+        themeSelect.addEventListener('change', function() {
+            applyTheme(this.value);
+            localStorage.setItem('theme', this.value);
+        });
+    }
+    
+    if (languageSelect) {
+        languageSelect.addEventListener('change', function() {
+            localStorage.setItem('language', this.value);
+        });
+    }
+    
+    if (spokenLanguageSelect) {
+        spokenLanguageSelect.addEventListener('change', function() {
+            localStorage.setItem('spokenLanguage', this.value);
+        });
+    }
+    
+    if (timeFormatSelect) {
+        timeFormatSelect.addEventListener('change', function() {
+            localStorage.setItem('timeFormat', this.value);
+            updateTimeDisplay(); // Refresh time display with new format
+        });
+    }
+    
+    // Load settings on page load
+    setTimeout(loadUserSettings, 100);
+});
+
+// Replace the existing setReminder function with this:
+function setReminder() {
+    openSettings();
+    switchSettingsTab('general');
 }
 
 function toggleSidebar() {

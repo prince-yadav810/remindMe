@@ -81,11 +81,14 @@ Current time: {current_time}
 
 User message: "{message}"
 
-IMPORTANT: Your response message must be PLAIN TEXT only. No HTML tags, no <br>, no <div> tags.
+CRITICAL: Your response message must be PLAIN TEXT ONLY for a text-based chat interface.
+ABSOLUTELY NO HTML TAGS: No <br>, no <div>, no <span>, no <i>, no status indicators, no styling.
+NO PROCESSING MESSAGES: Don't mention "processing" or "enhanced parsing" or status updates.
+SIMPLE CONVERSATIONAL TEXT ONLY.
 
 Respond ONLY in this JSON format:
 {{
-    "message": "Your helpful response to the user (PLAIN TEXT ONLY)",
+    "message": "Your helpful response (PLAIN TEXT ONLY - NO HTML WHATSOEVER)",
     "trigger": true/false{title_field}
 }}
 
@@ -98,11 +101,16 @@ Set trigger to true if the user wants to:
 
 Set trigger to false for general questions, greetings, or casual conversation.
 
-Examples:
+GOOD EXAMPLES:
 - "Remind me to call John at 3 PM" → {{"message": "I'll set a reminder for you to call John at 3 PM.", "trigger": true}}
 - "I have a meeting tomorrow at 10 AM" → {{"message": "I'll create a reminder for your meeting tomorrow at 10 AM.", "trigger": true}}
-- "What's the weather like?" → {{"message": "I don't have access to current weather information, but you can check a weather app or website for the latest forecast.", "trigger": false}}
+- "What's the weather like?" → {{"message": "I don't have access to current weather information, but you can check a weather app for the latest forecast.", "trigger": false}}
 - "Hello, how are you?" → {{"message": "Hello! I'm doing well, thank you. How can I help you today?", "trigger": false}}
+
+BAD EXAMPLES (DON'T DO THIS):
+- "I'll set a reminder.<br><div class='status'>Processing...</div>" ← NEVER INCLUDE HTML
+- "Setting reminder... <i class='icon'></i>" ← NEVER INCLUDE ICONS OR TAGS
+- "Processing reminder with enhanced parsing..." ← DON'T MENTION PROCESSING
 '''
 
 # Enhanced Data API Prompt - Better date handling
@@ -159,6 +167,20 @@ def safe_api_call(model, prompt, max_retries=2):
                 raise e
             time.sleep(1)
 
+def strip_html_tags(text):
+    """Remove HTML tags from text as a safety measure"""
+    import re
+    if not text:
+        return text
+    
+    # Remove HTML tags
+    clean_text = re.sub(r'<[^>]+>', '', text)
+    
+    # Remove extra whitespace that might be left
+    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+    
+    return clean_text
+
 def parse_json_response(response_text):
     """Parse JSON from API response with better error handling"""
     try:
@@ -175,7 +197,22 @@ def parse_json_response(response_text):
         if json_match:
             clean_text = json_match.group(0)
         
-        return json.loads(clean_text.strip())
+        parsed_data = json.loads(clean_text.strip())
+        
+        # CRITICAL: Strip HTML from the message as safety measure
+        if 'message' in parsed_data and parsed_data['message']:
+            original_message = parsed_data['message']
+            clean_message = strip_html_tags(original_message)
+            
+            if original_message != clean_message:
+                print(f"⚠️ Stripped HTML from AI response:")
+                print(f"   Original: {original_message[:100]}...")
+                print(f"   Cleaned:  {clean_message[:100]}...")
+            
+            parsed_data['message'] = clean_message
+        
+        return parsed_data
+        
     except Exception as e:
         print(f"JSON parsing error: {e}, text: {response_text[:200]}")
         return None
@@ -497,8 +534,13 @@ def chat():
         
         if not chat_data:
             # Fallback if JSON parsing fails
+            fallback_message = f"I understand your message: '{message}'. How can I help you?"
+            
+            # Ensure fallback is also clean
+            fallback_message = strip_html_tags(fallback_message)
+            
             fallback_response = {
-                'message': f"I understand your message: '{message}'. How can I help you?",
+                'message': fallback_message,
                 'trigger': any(word in message.lower() for word in ['remind', 'reminder', 'remember', 'schedule', 'appointment', 'meeting']),
                 'session_id': session_id
             }
@@ -507,8 +549,12 @@ def chat():
                 fallback_response['title'] = ' '.join(words) if words else 'New Chat'
             return jsonify(fallback_response)
         
+        # Clean the AI response message
+        ai_message = chat_data.get('message', 'I understand your message.')
+        clean_message = strip_html_tags(ai_message)
+        
         response_data = {
-            'message': chat_data.get('message', 'I understand your message.'),
+            'message': clean_message,
             'trigger': chat_data.get('trigger', False),
             'session_id': session_id
         }
