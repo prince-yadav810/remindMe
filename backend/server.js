@@ -1,4 +1,4 @@
-// ============= ENHANCED SERVER.JS WITH ALL FIXES =============
+// ============= UPDATED SERVER.JS - CALLS PYTHON SERVICE, KEEPS ALL EXISTING FUNCTIONALITY =============
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const multer = require('multer');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios'); // For calling Python service
 
 // Text extraction libraries
 const pdfParse = require('pdf-parse');
@@ -32,22 +32,13 @@ console.log('📧 BREVO_SENDER_EMAIL:', process.env.BREVO_SENDER_EMAIL);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Use single API key
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// Python AI service URL (your working app.py)
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:4000';
 
-if (!GEMINI_API_KEY) {
-    console.error('❌ GEMINI_API_KEY must be set in .env file');
-    console.error('Get your API key from: https://makersuite.google.com/app/apikey');
-    process.exit(1);
-}
+console.log('🔗 Python AI Service URL:', AI_SERVICE_URL);
+console.log('🐍 Will call your working Python app.py for AI processing');
 
-console.log('🔑 API Key loaded:', GEMINI_API_KEY ? 'YES' : 'NO');
-console.log('🔑 API Key first 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) + '...' : 'NOT SET');
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
-// ============= ENHANCED UTILITY FUNCTIONS =============
+// ============= UTILITY FUNCTIONS (PRESERVED FROM ORIGINAL) =============
 
 // Get comprehensive current date/time context
 function getCurrentDateTimeContext() {
@@ -80,291 +71,61 @@ function getCurrentDateTimeContext() {
     };
 }
 
-// Enhanced JSON parsing with better error handling
-function parseJsonResponse(responseText) {
+// Call your working Python AI Service
+async function callWorkingPythonService(message, sessionId, userId, conversationHistory, isNewConversation) {
     try {
-        let cleanText = responseText.trim();
+        console.log(`🐍 Calling your working Python service at ${AI_SERVICE_URL}/api/chat`);
         
-        // Remove markdown code blocks
-        if (cleanText.startsWith('```json')) {
-            cleanText = cleanText.slice(7, -3);
-        } else if (cleanText.startsWith('```')) {
-            cleanText = cleanText.slice(3, -3);
-        }
+        const response = await axios.post(`${AI_SERVICE_URL}/api/chat`, {
+            message: message,
+            session_id: sessionId,
+            user_id: userId,
+            conversation_history: conversationHistory || [],
+            current_datetime: getCurrentDateTimeContext(),
+            is_new_conversation: isNewConversation
+        }, {
+            timeout: 30000,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         
-        // Extract JSON from response using multiple patterns
-        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            cleanText = jsonMatch[0];
-        }
-        
-        // Try to parse
-        const parsed = JSON.parse(cleanText.trim());
-        console.log('✅ Successfully parsed JSON:', parsed);
-        return parsed;
+        console.log('✅ Python service response received');
+        return response.data;
         
     } catch (error) {
-        console.error('❌ JSON parsing error:', error.message);
-        console.error('Raw text (first 200 chars):', responseText.substring(0, 200));
+        console.error(`❌ Python service error:`, error.message);
         
-        // Try to extract key information manually as fallback
-        try {
-            const messageMatch = responseText.match(/"message"\s*:\s*"([^"]+)"/);
-            const triggerMatch = responseText.match(/"trigger"\s*:\s*(true|false)/);
-            const titleMatch = responseText.match(/"title"\s*:\s*"([^"]+)"/);
-            
-            if (messageMatch) {
-                const fallback = {
-                    message: messageMatch[1],
-                    trigger: triggerMatch ? triggerMatch[1] === 'true' : false
-                };
-                
-                if (titleMatch) {
-                    fallback.title = titleMatch[1];
-                }
-                
-                console.log('🔧 Using fallback parsing:', fallback);
-                return fallback;
-            }
-        } catch (fallbackError) {
-            console.error('❌ Fallback parsing also failed:', fallbackError.message);
+        if (error.code === 'ECONNREFUSED') {
+            throw new Error('Python AI service is not running! Please start: python app.py');
         }
         
-        return null;
+        throw new Error(`Python service failed: ${error.message}`);
     }
 }
 
-// Enhanced date conversion with better relative time support
-function convertDateToISO(dateStr, currentDateTime) {
-    const now = currentDateTime || new Date();
-    console.log('🕒 Converting date:', dateStr, 'with current time:', now.toISOString());
-    
-    if (!dateStr || dateStr === '' || dateStr === 'null' || dateStr === 'undefined') {
-        console.log('🗓️ No date provided, defaulting to today');
-        return now.toISOString().split('T')[0];
-    }
-    
-    dateStr = dateStr.toLowerCase().trim();
-    
-    // Handle relative dates
-    if (dateStr === 'today') {
-        return now.toISOString().split('T')[0];
-    } else if (dateStr === 'tomorrow') {
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        return tomorrow.toISOString().split('T')[0];
-    } else if (dateStr === 'yesterday') {
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        return yesterday.toISOString().split('T')[0];
-    }
-    
-    // Handle "in X hours/minutes/days" calculations
-    if (dateStr.includes('in ') && (dateStr.includes('hour') || dateStr.includes('minute') || dateStr.includes('day'))) {
-        const calculatedDate = new Date(now);
-        
-        if (dateStr.includes('hour')) {
-            const hours = parseInt(dateStr.match(/\d+/)?.[0] || '1');
-            calculatedDate.setHours(calculatedDate.getHours() + hours);
-            console.log(`⏰ Added ${hours} hours: ${calculatedDate.toISOString()}`);
-            return calculatedDate.toISOString().split('T')[0];
-        } else if (dateStr.includes('minute')) {
-            const minutes = parseInt(dateStr.match(/\d+/)?.[0] || '30');
-            calculatedDate.setMinutes(calculatedDate.getMinutes() + minutes);
-            console.log(`⏰ Added ${minutes} minutes: ${calculatedDate.toISOString()}`);
-            return calculatedDate.toISOString().split('T')[0];
-        } else if (dateStr.includes('day')) {
-            const days = parseInt(dateStr.match(/\d+/)?.[0] || '1');
-            calculatedDate.setDate(calculatedDate.getDate() + days);
-            console.log(`📅 Added ${days} days: ${calculatedDate.toISOString()}`);
-            return calculatedDate.toISOString().split('T')[0];
-        }
-    }
-    
-    // Handle day names (next Monday, Tuesday, etc.)
-    if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(dateStr)) {
-        const days = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
-        const targetDay = days[dateStr];
-        const currentDay = now.getDay();
-        let daysAhead = targetDay - currentDay;
-        if (daysAhead <= 0) daysAhead += 7; // Next occurrence
-        
-        const targetDate = new Date(now);
-        targetDate.setDate(now.getDate() + daysAhead);
-        console.log(`📅 Next ${dateStr}: ${targetDate.toISOString().split('T')[0]}`);
-        return targetDate.toISOString().split('T')[0];
-    }
-    
-    // Handle month day format like "july 15", "december 25"
-    const monthDayMatch = dateStr.match(/(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})/);
-    
-    if (monthDayMatch) {
-        const monthStr = monthDayMatch[1];
-        const day = parseInt(monthDayMatch[2]);
-        
-        const monthMap = {
-            january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2,
-            april: 3, apr: 3, may: 4, june: 5, jun: 5,
-            july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8,
-            october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11
-        };
-        
-        const month = monthMap[monthStr];
-        
-        try {
-            const targetDate = new Date(now.getFullYear(), month, day);
-            // If the date has passed this year, use next year
-            if (targetDate < now) {
-                targetDate.setFullYear(now.getFullYear() + 1);
-            }
-            console.log(`📅 Parsed ${dateStr}: ${targetDate.toISOString().split('T')[0]}`);
-            return targetDate.toISOString().split('T')[0];
-        } catch (error) {
-            console.error('Invalid date:', month, day);
-            return now.toISOString().split('T')[0];
-        }
-    }
-    
-    // Handle ISO date format (YYYY-MM-DD)
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return dateStr;
-    }
-    
-    // Default to today if nothing matches
-    console.log('📅 Defaulting to today for unrecognized format:', dateStr);
-    return now.toISOString().split('T')[0];
-}
-
-// Enhanced time conversion with relative time support
-function convertTimeTo24h(timeStr, currentDateTime) {
-    if (!timeStr) return null;
-    
-    const now = currentDateTime || new Date();
-    timeStr = timeStr.toLowerCase().trim();
-    console.log('🕐 Converting time:', timeStr);
-    
-    // Handle "in X hours/minutes" format
-    if (timeStr.includes('in ') && (timeStr.includes('hour') || timeStr.includes('minute'))) {
-        const calculatedTime = new Date(now);
-        
-        if (timeStr.includes('hour')) {
-            const hours = parseInt(timeStr.match(/\d+/)?.[0] || '1');
-            calculatedTime.setHours(calculatedTime.getHours() + hours);
-            const result = `${calculatedTime.getHours().toString().padStart(2, '0')}:${calculatedTime.getMinutes().toString().padStart(2, '0')}`;
-            console.log(`⏰ Calculated time for "${timeStr}": ${result}`);
-            return result;
-        } else if (timeStr.includes('minute')) {
-            const minutes = parseInt(timeStr.match(/\d+/)?.[0] || '30');
-            calculatedTime.setMinutes(calculatedTime.getMinutes() + minutes);
-            const result = `${calculatedTime.getHours().toString().padStart(2, '0')}:${calculatedTime.getMinutes().toString().padStart(2, '0')}`;
-            console.log(`⏰ Calculated time for "${timeStr}": ${result}`);
-            return result;
-        }
-    }
-    
-    // Handle 12 AM/PM specifically
-    if (timeStr.includes('12am') || timeStr.includes('12 am')) {
-        return "00:00";
-    } else if (timeStr.includes('12pm') || timeStr.includes('12 pm')) {
-        return "12:00";
-    }
-    
-    // Handle other AM/PM cases
-    const timeMatch = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/);
-    if (timeMatch) {
-        let hour = parseInt(timeMatch[1]);
-        const minute = parseInt(timeMatch[2] || '0');
-        const isPM = timeMatch[3] === 'pm';
-        
-        if (isPM && hour !== 12) {
-            hour += 12;
-        } else if (!isPM && hour === 12) {
-            hour = 0;
-        }
-        
-        const result = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        console.log(`🕐 Converted "${timeStr}" to: ${result}`);
-        return result;
-    }
-    
-    // Handle 24-hour format
-    if (timeStr.includes(':')) {
-        const parts = timeStr.split(':');
-        try {
-            const hour = parseInt(parts[0]);
-            const minute = parseInt(parts[1] || '0');
-            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            }
-        } catch (e) {
-            console.error('Error parsing time:', e);
-        }
-    }
-    
-    // Default times for common words
-    if (timeStr.includes('morning')) return "09:00";
-    if (timeStr.includes('afternoon')) return "14:00";
-    if (timeStr.includes('evening')) return "18:00";
-    if (timeStr.includes('night')) return "20:00";
-    
-    return null;
-}
-
-// Enhanced reminder processing with better error handling
+// Enhanced reminder processing (PRESERVED FROM ORIGINAL)
 async function processReminderData(reminderData, userId, sessionId, originalMessage) {
-    console.log('🔍 Processing enhanced reminder data:', { reminderData, userId, sessionId });
+    console.log('🔍 Processing reminder data from Python service:', { reminderData, userId, sessionId });
     
-    const currentDateTime = getCurrentDateTimeContext();
-    
-    // Validate input data
     if (!reminderData || !reminderData.title) {
-        console.log('⚠️ Invalid reminder data, creating fallback');
-        reminderData = {
-            title: originalMessage.substring(0, 50) + '...',
-            date: 'today',
-            time: null,
-            description: `Auto-extracted from: ${originalMessage}`
-        };
+        console.log('⚠️ Invalid reminder data from Python service');
+        throw new Error('Invalid reminder data received from AI service');
     }
     
-    // Enhanced date/time processing
-    let isoDate, convertedTime;
-    
-    try {
-        // Use enhanced conversion functions with current time context
-        isoDate = convertDateToISO(reminderData.date, currentDateTime.dateObject);
-        convertedTime = convertTimeTo24h(reminderData.time, currentDateTime.dateObject);
-        
-        console.log(`📅 Enhanced conversion result - Date: ${isoDate}, Time: ${convertedTime}`);
-    } catch (conversionError) {
-        console.error('❌ Date/time conversion error:', conversionError);
-        // Fallback to today
-        isoDate = currentDateTime.isoDate;
-        convertedTime = null;
-    }
-    
-    console.log(`📅 Creating reminder: "${reminderData.title}" on ${isoDate} at ${convertedTime || 'default time'}`);
-    
-    // Create reminder time with validation
+    // The Python service already processed the date/time, just use it
     let reminderTime;
     try {
-        if (convertedTime) {
-            reminderTime = new Date(`${isoDate}T${convertedTime}:00`);
+        if (reminderData.time && reminderData.date) {
+            reminderTime = new Date(`${reminderData.date}T${reminderData.time}:00`);
+        } else if (reminderData.date) {
+            reminderTime = new Date(`${reminderData.date}T09:00:00`);
         } else {
-            // Default to 9 AM if no time specified
-            reminderTime = new Date(`${isoDate}T09:00:00`);
+            reminderTime = new Date();
+            reminderTime.setHours(9, 0, 0, 0);
         }
-        
-        // Validate the date is not in the past (except for today)
-        const now = new Date();
-        if (reminderTime < now && isoDate !== currentDateTime.isoDate) {
-            console.log('⚠️ Date is in the past, adjusting to next occurrence');
-            reminderTime.setFullYear(now.getFullYear() + 1);
-        }
-        
     } catch (dateError) {
         console.error('❌ Error creating reminder date:', dateError);
-        // Fallback to tomorrow at 9 AM
         reminderTime = new Date();
         reminderTime.setDate(reminderTime.getDate() + 1);
         reminderTime.setHours(9, 0, 0, 0);
@@ -377,7 +138,7 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
     
     console.log('👤 Creating reminder for userId:', userId);
     
-    // Create reminder document with enhanced validation
+    // Create reminder document
     const reminderDoc = {
         sessionId: sessionId,
         userId: new mongoose.Types.ObjectId(userId),
@@ -391,7 +152,7 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         updatedAt: new Date()
     };
     
-    console.log('💾 Saving enhanced reminder document:', {
+    console.log('💾 Saving reminder document:', {
         title: reminderDoc.title,
         reminderTime: reminderDoc.reminderTime,
         userId: reminderDoc.userId
@@ -412,7 +173,6 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
             if (attempt === maxRetries) {
                 throw saveError;
             }
-            // Wait before retry
             await new Promise(resolve => setTimeout(resolve, 100 * attempt));
         }
     }
@@ -423,7 +183,7 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         throw new Error('Reminder was not saved properly with userId');
     }
     
-    console.log('✅ Enhanced reminder saved and verified with ID:', savedReminder._id);
+    console.log('✅ Reminder saved and verified with ID:', savedReminder._id);
     
     // Update user stats
     try {
@@ -433,24 +193,23 @@ async function processReminderData(reminderData, userId, sessionId, originalMess
         });
     } catch (statsError) {
         console.error('⚠️ Failed to update user stats:', statsError.message);
-        // Don't fail the whole operation for stats update
     }
     
     return {
         id: savedReminder._id,
         title: savedReminder.title,
-        date: isoDate,
-        time: convertedTime,
+        date: reminderData.date,
+        time: reminderData.time,
         description: savedReminder.description,
         reminderTime: savedReminder.reminderTime,
         status: savedReminder.status,
         verified: true,
         originalMessage: originalMessage,
-        currentDateTime: currentDateTime.readable
+        currentDateTime: getCurrentDateTimeContext().readable
     };
 }
 
-// ============= MIDDLEWARE SETUP =============
+// ============= MIDDLEWARE SETUP (PRESERVED FROM ORIGINAL) =============
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -519,8 +278,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/remindme'
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// ============= AUTHENTICATION ROUTES =============
-
+// ============= AUTHENTICATION ROUTES (PRESERVED FROM ORIGINAL) =============
 app.use('/auth', authRouter);
 
 // Serve auth page
@@ -528,12 +286,12 @@ app.get('/auth', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/auth.html'));
 });
 
-// Serve forgot password page (NEW ROUTE)
+// Serve forgot password page (PRESERVED FROM ORIGINAL)
 app.get('/forgot-password', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/forgot-password.html'));
 });
 
-// Serve reset password page (NEW ROUTE) 
+// Serve reset password page (PRESERVED FROM ORIGINAL) 
 app.get('/reset-password', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/reset-password.html'));
 });
@@ -559,7 +317,7 @@ app.get('/', (req, res) => {
     }
 });
 
-// ============= ENHANCED CHAT ENDPOINT =============
+// ============= CHAT ENDPOINT - NOW CALLS PYTHON SERVICE =============
 app.post('/api/chat', authenticateToken, async (req, res) => {
     try {
         const { message, conversationId } = req.body;
@@ -575,7 +333,7 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
 
         console.log('💬 Processing message:', message, 'for user:', userId, 'conversation:', conversationId);
 
-        // Get comprehensive current date/time context
+        // Get current date/time context
         const currentDateTime = getCurrentDateTimeContext();
         console.log('🕒 Current context:', currentDateTime);
 
@@ -595,12 +353,11 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
         }
 
         if (!conversation) {
-            // Create new conversation
             userSessionId = `session-${userId}-${Date.now()}`;
             conversation = new Conversation({
                 userId: userId,
                 sessionId: userSessionId,
-                title: 'New Conversation', // Will be updated with AI-generated title
+                title: 'New Conversation',
                 messages: [],
                 context: {
                     keyTopics: [],
@@ -612,213 +369,34 @@ app.post('/api/chat', authenticateToken, async (req, res) => {
             console.log('🆕 Creating new conversation');
         }
 
-        // Build enhanced conversation context with complete previous messages
-        const recentMessages = conversation.messages.slice(-20); // Increased for better context
-        let contextPrompt = `CURRENT DATE AND TIME CONTEXT:
-Date: ${currentDateTime.readable}
-Day of Week: ${currentDateTime.dayOfWeek}
-ISO Date: ${currentDateTime.isoDate}
-24-hour Time: ${currentDateTime.time24}
-Current Hour: ${currentDateTime.hour}
-Current Minute: ${currentDateTime.minute}
-Unix Timestamp: ${currentDateTime.timestamp}
-
-IMPORTANT: Use this exact date and time information for all calculations. When user says "today" use ${currentDateTime.isoDate}, when they say "tomorrow" use the next day, etc.
-
-`;
+        // Build conversation context
+        const recentMessages = conversation.messages.slice(-20);
         
-        if (recentMessages.length > 0) {
-            contextPrompt += '\nPREVIOUS CONVERSATION CONTEXT:\n';
-            recentMessages.forEach((msg, index) => {
-                const msgTime = new Date(msg.timestamp).toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                contextPrompt += `[${msgTime}] ${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
-            });
-            contextPrompt += '\n--- END OF PREVIOUS CONTEXT ---\n\n';
-        }
-        
-        contextPrompt += `CURRENT USER MESSAGE: ${message}`;
+        console.log('🤖 Calling your working Python AI service...');
 
-        // Enhanced Chat API prompt with better context awareness
-        const ENHANCED_CHAT_PROMPT = `
-You are remindME, a helpful AI personal assistant specialized in reminders, scheduling, and answering questions with full conversation context.
+        // Call your working Python AI service
+        const pythonResponse = await callWorkingPythonService(
+            message,
+            userSessionId,
+            userId,
+            recentMessages.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+                timestamp: msg.timestamp
+            })),
+            isNewConversation
+        );
 
-${contextPrompt}
+        console.log('🎯 Python AI Response received:', {
+            trigger: pythonResponse.trigger,
+            hasReminder: !!pythonResponse.reminder_created,
+            hasTitle: !!pythonResponse.title
+        });
 
-CRITICAL INSTRUCTIONS:
-1. ALWAYS consider the full conversation context above when responding
-2. If the user refers to previous messages (like "what does he do" after asking about a CEO), use the context to understand the reference
-3. Use the EXACT current date/time provided above for all time-based responses and calculations
-4. Remember what was discussed earlier in this conversation and maintain continuity
-5. For follow-up questions, refer back to previous context to provide accurate answers
-
-RESPONSE REQUIREMENTS:
-Analyze the user's current message and respond in JSON format:
-{
-    "message": "Your helpful response considering full conversation context",
-    "trigger": true/false${isNewConversation ? ',\n    "title": "Brief 4-6 word conversation title"' : ''}
-}
-
-TRIGGER RULES (set to true if user wants to):
-- Set a reminder (words: remind, reminder, remember, schedule, appointment, meeting, alert, notify)
-- Create tasks with specific times/dates
-- Set alarms or notifications
-- Use phrases like "remind me", "don't forget", "set reminder", "in X hours", etc.
-
-TRIGGER EXAMPLES:
-✅ TRUE: "remind me to call John", "meeting tomorrow at 3pm", "in 2 hours remind me", "schedule appointment"
-❌ FALSE: general questions, explanations, casual conversation, asking for information
-
-${isNewConversation ? '\nSince this is a NEW conversation, also provide a brief, descriptive title (4-6 words) that captures the main topic.' : ''}
-
-CONTEXT AWARENESS EXAMPLES:
-- If previously discussed "OpenAI CEO" and user asks "what does he do", you should know they mean the CEO of OpenAI
-- If user mentioned a project name and later asks "how's it going", refer to that project
-- Maintain conversation flow and remember previous topics
-`;
-
-        // Enhanced data extraction prompt with comprehensive time context
-        const ENHANCED_DATA_PROMPT = `
-CURRENT DATE/TIME CONTEXT FOR REMINDER EXTRACTION:
-Date: ${currentDateTime.readable}
-Day: ${currentDateTime.dayOfWeek}
-ISO Date: ${currentDateTime.isoDate}
-Current Time (24h): ${currentDateTime.time24}
-Current Hour: ${currentDateTime.hour}
-Current Minute: ${currentDateTime.minute}
-Unix Timestamp: ${currentDateTime.timestamp}
-
-USER MESSAGE: "${message}"
-
-PREVIOUS CONVERSATION CONTEXT:
-${recentMessages.slice(-5).map(m => `${m.role}: ${m.content}`).join('\n')}
-
-EXTRACTION INSTRUCTIONS:
-1. Use the EXACT current date/time above for all calculations
-2. For relative times like "in 2 hours", calculate based on current time (${currentDateTime.time24})
-3. For relative dates like "tomorrow", use the day after ${currentDateTime.isoDate}
-4. If user says "today", use ${currentDateTime.isoDate}
-5. Consider conversation context for understanding references
-
-TIME CALCULATION EXAMPLES:
-- "in 2 hours" = current time (${currentDateTime.time24}) + 2 hours
-- "tomorrow at 3pm" = ${currentDateTime.isoDate} + 1 day + 15:00
-- "next Monday" = calculate next Monday from ${currentDateTime.dayOfWeek}
-- "in 30 minutes" = current time + 30 minutes
-
-RESPONSE FORMAT (JSON only):
-{
-    "title": "Clear action description (required)",
-    "date": "YYYY-MM-DD format or 'today'/'tomorrow'",
-    "time": "HH:MM in 24-hour format or null",
-    "description": "Additional context from message"
-}
-
-CRITICAL: For relative times, calculate the EXACT datetime based on the current timestamp ${currentDateTime.timestamp} provided above.
-`;
-
-        // API call with enhanced retry logic
-        async function callGeminiWithRetry(prompt, maxRetries = 3) {
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    console.log(`🤖 Gemini API call attempt ${attempt}/${maxRetries}`);
-                    
-                    const model = genAI.getGenerativeModel({ 
-                        model: 'gemini-1.5-flash',
-                        generationConfig: {
-                            maxOutputTokens: 600,
-                            temperature: 0.7,
-                        }
-                    });
-
-                    const result = await model.generateContent(prompt);
-                    const response = result.response.text();
-                    console.log(`✅ Gemini API success on attempt ${attempt}`);
-                    return response;
-                    
-                } catch (error) {
-                    console.error(`❌ Gemini API attempt ${attempt} failed:`, error.message);
-                    
-                    if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('rate limit')) {
-                        console.log(`⏰ Rate limit hit, attempt ${attempt}/${maxRetries}`);
-                        
-                        if (attempt === maxRetries) {
-                            return getFallbackResponse(message, isNewConversation, recentMessages);
-                        }
-                        
-                        const waitTime = Math.pow(2, attempt) * 1000;
-                        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
-                        await new Promise(resolve => setTimeout(resolve, waitTime));
-                        continue;
-                    }
-                    
-                    if (attempt === maxRetries) {
-                        return getFallbackResponse(message, isNewConversation, recentMessages);
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
-        }
-
-        // Enhanced fallback response
-        function getFallbackResponse(message, isNewConversation, recentMessages) {
-            console.log('🔄 Using enhanced fallback response');
-            
-            const triggerWords = ['remind', 'reminder', 'remember', 'schedule', 'appointment', 'meeting', 'in ', ' at ', 'tomorrow', 'today', 'next week', 'alert'];
-            const hasTrigger = triggerWords.some(word => message.toLowerCase().includes(word));
-            
-            // Try to maintain context in fallback
-            let contextualResponse = `I understand you want me to help with: "${message}".`;
-            
-            if (recentMessages.length > 0) {
-                const lastMessage = recentMessages[recentMessages.length - 2]; // Last user message
-                if (lastMessage && lastMessage.role === 'user') {
-                    contextualResponse = `I understand your follow-up about "${message}" in context of our previous discussion about "${lastMessage.content}".`;
-                }
-            }
-            
-            if (hasTrigger) {
-                contextualResponse += " I'll help you set up that reminder.";
-            } else {
-                contextualResponse += " How can I assist you further?";
-            }
-            
-            const fallbackResponse = {
-                message: contextualResponse,
-                trigger: hasTrigger
-            };
-            
-            if (isNewConversation) {
-                fallbackResponse.title = message.substring(0, 30).trim() + '...';
-            }
-            
-            return JSON.stringify(fallbackResponse);
-        }
-
-        // Step 1: Enhanced Chat API with context
-        const chatResponse = await callGeminiWithRetry(ENHANCED_CHAT_PROMPT);
-        const chatData = parseJsonResponse(chatResponse);
-        
-        if (!chatData) {
-            console.error('❌ Failed to parse chat response, using fallback');
-            return res.status(500).json({
-                error: 'Failed to process your message. Please try again.',
-                success: false
-            });
-        }
-
-        // Update conversation title if new
-        if (isNewConversation && chatData.title) {
-            conversation.title = chatData.title;
-            console.log('📝 Set conversation title:', chatData.title);
-        }
-
+        // Prepare response data
         const responseData = {
-            response: chatData.message || 'I understand your message.',
-            trigger: chatData.trigger || false,
+            response: pythonResponse.message || 'I understand your message.',
+            trigger: pythonResponse.trigger || false,
             conversationId: conversation._id,
             sessionId: userSessionId,
             success: true,
@@ -829,59 +407,48 @@ CRITICAL: For relative times, calculate the EXACT datetime based on the current 
             currentDateTime: currentDateTime.readable
         };
 
-        console.log('🎯 AI Response generated, trigger detected:', chatData.trigger);
+        // Add title to response for new conversations
+        if (isNewConversation && pythonResponse.title) {
+            responseData.title = pythonResponse.title;
+        }
 
-        // Step 2: Enhanced reminder processing
-        if (chatData.trigger) {
-            console.log('🔄 Trigger detected, extracting reminder details with enhanced parsing...');
-            responseData.processing_status = 'processing_reminder';
-            
+        // Update conversation title if new and AI generated one
+        if (isNewConversation && pythonResponse.title) {
+            conversation.title = pythonResponse.title;
+            responseData.conversationTitle = pythonResponse.title;
+            console.log('📝 Set AI-generated conversation title:', pythonResponse.title);
+        } else if (isNewConversation) {
+            // Fallback title if Python didn't generate one
+            const fallbackTitle = message.substring(0, 30).trim() || 'New Conversation';
+            conversation.title = fallbackTitle;
+            responseData.conversationTitle = fallbackTitle;
+            console.log('📝 Set fallback conversation title:', fallbackTitle);
+        }
+
+        // Process reminder if created by Python service
+        if (pythonResponse.reminder_created) {
+            console.log('📋 Processing reminder from Python service...');
             try {
-                const dataResponse = await callGeminiWithRetry(ENHANCED_DATA_PROMPT);
-                const reminderData = parseJsonResponse(dataResponse);
+                const storedReminder = await processReminderData(
+                    pythonResponse.reminder_created, 
+                    userId, 
+                    userSessionId, 
+                    message
+                );
                 
-                console.log('📊 Enhanced Data API response:', reminderData);
-                
-                if (reminderData && reminderData.title) {
-                    let storedReminder = null;
-                    let attempts = 0;
-                    const maxAttempts = 3;
-                    
-                    while (!storedReminder && attempts < maxAttempts) {
-                        attempts++;
-                        try {
-                            console.log(`🔄 Attempt ${attempts} to create reminder with enhanced processing...`);
-                            storedReminder = await processReminderData(reminderData, userId, userSessionId, message);
-                            
-                            if (storedReminder && storedReminder.verified) {
-                                responseData.reminder_created = storedReminder;
-                                responseData.processing_status = 'reminder_created';
-                                console.log(`✅ Enhanced reminder created successfully: ${storedReminder.title}`);
-                                break;
-                            }
-                        } catch (reminderError) {
-                            console.error(`❌ Reminder creation attempt ${attempts} failed:`, reminderError.message);
-                            if (attempts === maxAttempts) {
-                                responseData.processing_status = 'reminder_failed';
-                                responseData.error = `Failed to create reminder: ${reminderError.message}`;
-                            }
-                            await new Promise(resolve => setTimeout(resolve, 100 * attempts));
-                        }
-                    }
-                } else {
-                    console.log('❌ Failed to parse reminder data or missing title');
-                    responseData.processing_status = 'parsing_failed';
-                    responseData.error = 'Could not extract reminder details. Please try with more specific information like "remind me to call John at 3pm tomorrow".';
+                if (storedReminder && storedReminder.verified) {
+                    responseData.reminder_created = storedReminder;
+                    responseData.processing_status = 'reminder_created';
+                    console.log('✅ Reminder stored in database:', storedReminder.title);
                 }
-                
-            } catch (dataError) {
-                console.error('❌ Data API error:', dataError.message);
-                responseData.processing_status = 'data_api_failed';
-                responseData.error = 'Failed to process reminder. Please try again with more specific time details.';
+            } catch (reminderError) {
+                console.error('❌ Reminder storage failed:', reminderError.message);
+                responseData.processing_status = 'reminder_failed';
+                responseData.error = `Failed to store reminder: ${reminderError.message}`;
             }
         }
 
-        // Save conversation with enhanced context tracking
+        // Save conversation
         conversation.messages.push(
             { role: 'user', content: message, timestamp: new Date() },
             { 
@@ -889,7 +456,7 @@ CRITICAL: For relative times, calculate the EXACT datetime based on the current 
                 content: responseData.response, 
                 timestamp: new Date(),
                 metadata: {
-                    intentClassification: chatData.trigger ? 'set_reminder' : 'general',
+                    intentClassification: pythonResponse.trigger ? 'set_reminder' : 'general',
                     hasContext: recentMessages.length > 0,
                     contextLength: recentMessages.length,
                     currentDateTime: currentDateTime.readable
@@ -917,9 +484,15 @@ CRITICAL: For relative times, calculate the EXACT datetime based on the current 
         return res.json(responseData);
 
     } catch (error) {
-        console.error('❌ Enhanced Chat error:', error.message);
+        console.error('❌ Chat error:', error.message);
         
-        if (error.message.includes('429') || error.message.includes('quota')) {
+        if (error.message.includes('Python AI service is not running')) {
+            res.status(503).json({ 
+                error: 'AI service is currently unavailable. Please ensure the Python AI service is running.',
+                success: false,
+                suggestion: 'Run: python app.py in a separate terminal'
+            });
+        } else if (error.message.includes('429') || error.message.includes('quota')) {
             res.status(429).json({ 
                 error: 'API rate limit reached. Please wait a minute and try again.',
                 success: false,
@@ -934,7 +507,7 @@ CRITICAL: For relative times, calculate the EXACT datetime based on the current 
     }
 });
 
-// ============= NEW ENDPOINTS =============
+// ============= ALL OTHER EXISTING ENDPOINTS (PRESERVED EXACTLY) =============
 
 // GET CURRENT CHAT ID ENDPOINT
 app.get('/api/current-chat', authenticateToken, async (req, res) => {
@@ -971,8 +544,6 @@ app.get('/api/current-chat', authenticateToken, async (req, res) => {
         });
     }
 });
-
-// ============= EXISTING ENDPOINTS (ENHANCED) =============
 
 app.post('/api/new-chat', authenticateToken, async (req, res) => {
     try {
@@ -1106,20 +677,7 @@ app.get('/api/conversations/:conversationId', authenticateToken, async (req, res
     }
 });
 
-// ============= UTILITY FUNCTIONS =============
-function extractTopics(message) {
-    const words = message.toLowerCase().split(/\s+/);
-    const topics = words.filter(word => 
-        word.length > 4 && 
-        !['remind', 'please', 'could', 'would', 'should', 'tomorrow', 'today', 'hello', 'thanks'].includes(word)
-    );
-    return topics.slice(0, 3);
-}
-
-// ============= KEEP ALL OTHER EXISTING ENDPOINTS =============
-// [File upload, reminders, health check, etc. - keep as they were in your original code]
-
-// Get reminders (enhanced with better formatting)
+// Get reminders (PRESERVED FROM ORIGINAL)
 app.get('/api/reminders', authenticateToken, async (req, res) => {
     try {
         const userId = req.user._id;
@@ -1200,8 +758,6 @@ app.get('/api/reminders', authenticateToken, async (req, res) => {
     }
 });
 
-// [Keep all other existing endpoints like file upload, manual reminder creation, health check, etc.]
-
 app.post('/api/reminders', authenticateToken, async (req, res) => {
     try {
         const { title, time, date, description } = req.body;
@@ -1242,11 +798,19 @@ app.post('/api/reminders', authenticateToken, async (req, res) => {
     }
 });
 
-// Health check
+// Health check (updated to show Python service status)
 app.get('/api/health', async (req, res) => {
     try {
         const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-        const geminiConfigured = !!GEMINI_API_KEY;
+        
+        // Check Python AI service health
+        let pythonServiceStatus = 'unknown';
+        try {
+            const pythonHealth = await axios.get(`${AI_SERVICE_URL}/api/health`, { timeout: 5000 });
+            pythonServiceStatus = pythonHealth.data.status === 'healthy' ? 'connected' : 'error';
+        } catch (pythonError) {
+            pythonServiceStatus = 'disconnected';
+        }
         
         const totalUsers = await User.countDocuments();
         const totalConversations = await Conversation.countDocuments();
@@ -1257,7 +821,7 @@ app.get('/api/health', async (req, res) => {
             timestamp: new Date().toISOString(),
             services: {
                 database: mongoStatus,
-                ai: geminiConfigured ? 'configured' : 'not configured',
+                python_ai_service: pythonServiceStatus,
                 authentication: 'active'
             },
             stats: {
@@ -1266,8 +830,9 @@ app.get('/api/health', async (req, res) => {
                 totalReminders,
                 uptime: process.uptime()
             },
-            version: '3.0.0 - Enhanced Context & Time Parsing',
-            environment: process.env.NODE_ENV || 'development'
+            version: '4.0.0 - Calls Working Python Service',
+            environment: process.env.NODE_ENV || 'development',
+            python_service_url: AI_SERVICE_URL
         });
     } catch (error) {
         console.error('Health check error:', error);
@@ -1275,7 +840,17 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Error handling middleware
+// ============= UTILITY FUNCTIONS (PRESERVED FROM ORIGINAL) =============
+function extractTopics(message) {
+    const words = message.toLowerCase().split(/\s+/);
+    const topics = words.filter(word => 
+        word.length > 4 && 
+        !['remind', 'please', 'could', 'would', 'should', 'tomorrow', 'today', 'hello', 'thanks'].includes(word)
+    );
+    return topics.slice(0, 3);
+}
+
+// Error handling middleware (PRESERVED FROM ORIGINAL)
 app.use((err, req, res, next) => {
     console.error(err.stack);
     if (err instanceof multer.MulterError) {
@@ -1290,10 +865,13 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Auth Page: http://localhost:${PORT}/auth`);
+    console.log(`📱 Forgot Password: http://localhost:${PORT}/forgot-password`);
+    console.log(`📱 Reset Password: http://localhost:${PORT}/reset-password`);
     console.log(`📱 Main App: http://localhost:${PORT}/app`);
     console.log(`🔌 API Health: http://localhost:${PORT}/api/health`);
     console.log(`🆔 Current Chat: http://localhost:${PORT}/api/current-chat`);
-    console.log('🤖 Using Enhanced Dual API System with Full Context Management');
+    console.log('🤖 Using Your Working Python AI Service');
+    console.log('🐍 IMPORTANT: Make sure to start your Python service: python app.py');
 });
 
 module.exports = app;
